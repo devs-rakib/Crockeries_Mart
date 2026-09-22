@@ -5,7 +5,7 @@ use App\Helpers\Sanitizer;
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Add Product</h4>
     <a href="<?= ADMIN_URL ?>products" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back to Products
+        <i class="bi bi-arrow-left me-1"></i> Back to Products
     </a>
 </div>
 
@@ -140,7 +140,7 @@ use App\Helpers\Sanitizer;
 
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-save me-1"></i> Create Product
+                    <i class="bi bi-check-lg me-1"></i> Create Product
                 </button>
             </div>
         </div>

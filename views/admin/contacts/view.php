@@ -8,7 +8,7 @@ use App\Helpers\CSRF;
         <small class="text-muted">From <?= Sanitizer::clean($contact['name']) ?> - <?= Sanitizer::timeAgo($contact['created_at']) ?></small>
     </div>
     <a href="<?= ADMIN_URL ?>contacts" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back to Contacts
+        <i class="bi bi-arrow-left me-1"></i> Back to Contacts
     </a>
 </div>
 
@@ -45,7 +45,7 @@ use App\Helpers\CSRF;
             <form method="POST" action="<?= ADMIN_URL ?>contacts/destroy/<?= (int)$contact['id'] ?>" onsubmit="return confirm('Are you sure you want to delete this message?');">
                 <?= CSRF::field() ?>
                 <button type="submit" class="btn btn-outline-danger w-100">
-                    <i class="fas fa-trash me-1"></i> Delete Message
+                    <i class="bi bi-trash me-1"></i> Delete Message
                 </button>
             </form>
         </div>

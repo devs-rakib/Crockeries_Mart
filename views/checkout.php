@@ -3,6 +3,7 @@
  * Checkout Page - CrokersesMart
  * @var array  $cart     Cart items
  * @var float  $subtotal Cart subtotal
+ * @var array  $user     Logged-in user data (or null)
  */
 
 use App\Helpers\CSRF;
@@ -10,6 +11,9 @@ use App\Helpers\Sanitizer;
 
 $shippingInside  = SHIPPING_INSIDE_DHAKA;
 $shippingOutside = SHIPPING_OUTSIDE_DHAKA;
+$customerName    = $user['name'] ?? '';
+$customerPhone   = $user['phone'] ?? '';
+$customerEmail   = $user['email'] ?? '';
 ?>
 
 <style>
@@ -32,6 +36,16 @@ $shippingOutside = SHIPPING_OUTSIDE_DHAKA;
     .payment-option input:checked ~ .option-info { color: var(--cm-primary); }
     .delivery-option:has(input:checked), .payment-option:has(input:checked) {
         border-color: var(--cm-primary); background: #fff0f0;
+    }
+    .payment-option.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: var(--cm-gray-100);
+        border-color: var(--cm-gray-200);
+    }
+    .payment-option.disabled:hover {
+        border-color: var(--cm-gray-200);
+        background: var(--cm-gray-100);
     }
     .delivery-option input, .payment-option input { accent-color: var(--cm-primary); width: 18px; height: 18px; }
     .option-info .option-title { font-weight: 600; font-size: 14px; color: var(--cm-dark); }
@@ -87,15 +101,15 @@ $shippingOutside = SHIPPING_OUTSIDE_DHAKA;
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="customer_name" required placeholder="Enter your full name">
+                                <input type="text" class="form-control" name="customer_name" required placeholder="Enter your full name" value="<?= Sanitizer::clean($customerName) ?>">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Phone Number <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control" name="customer_phone" required placeholder="01XXXXXXXXX">
+                                <input type="tel" class="form-control" name="customer_phone" required placeholder="01XXXXXXXXX" value="<?= Sanitizer::clean($customerPhone) ?>">
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Email Address <small class="text-muted">(Optional)</small></label>
-                                <input type="email" class="form-control" name="customer_email" placeholder="your@email.com">
+                                <input type="email" class="form-control" name="customer_email" placeholder="your@email.com" value="<?= Sanitizer::clean($customerEmail) ?>">
                             </div>
                         </div>
                     </div>
@@ -145,28 +159,6 @@ $shippingOutside = SHIPPING_OUTSIDE_DHAKA;
                                 <div>
                                     <div class="option-title">Cash on Delivery (COD)</div>
                                     <div class="option-desc">Pay when you receive your order</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="payment-option">
-                            <input type="radio" name="payment_method" value="bkash" id="payBkash">
-                            <i class="bi bi-phone payment-icon" style="color:#e2136e;"></i>
-                            <div class="option-info d-flex flex-grow-1 align-items-center">
-                                <div>
-                                    <div class="option-title">bKash</div>
-                                    <div class="option-desc">Pay via bKash mobile banking</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="payment-option">
-                            <input type="radio" name="payment_method" value="nagad" id="payNagad">
-                            <i class="bi bi-wallet2 payment-icon" style="color:#f6921e;"></i>
-                            <div class="option-info d-flex flex-grow-1 align-items-center">
-                                <div>
-                                    <div class="option-title">Nagad</div>
-                                    <div class="option-desc">Pay via Nagad digital banking</div>
                                 </div>
                             </div>
                         </div>
@@ -259,6 +251,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('input[name="delivery_area"]').forEach(function (el) {
         el.addEventListener('change', updateShipping);
+    });
+
+    document.querySelectorAll('.delivery-option').forEach(function (el) {
+        el.addEventListener('click', function () {
+            var radio = this.querySelector('input[type="radio"]');
+            if (radio) { radio.checked = true; updateShipping(); }
+        });
+    });
+
+    document.querySelectorAll('.payment-option').forEach(function (el) {
+        el.addEventListener('click', function () {
+            var radio = this.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+        });
     });
 
     form.addEventListener('submit', function (e) {

@@ -45,6 +45,10 @@ class DashboardController
 
             $recentOrders = $this->orderModel->getRecentOrders(10);
             $dailyRevenue = $this->orderModel->getDailyRevenue(7);
+            $orderStatusCounts = $this->orderModel->getOrderStatusCounts();
+            $stockReport = $this->orderModel->getStockReport();
+            $newCustomers = $this->orderModel->getNewCustomers(7);
+            $metrics = $this->orderModel->getEvaluationMetrics();
             $categories = $this->categoryModel->countAll();
             $brands = $this->brandModel->countAll();
 
@@ -60,6 +64,10 @@ class DashboardController
                 'cancelledOrders' => $stats['cancelled_orders'],
                 'recentOrders' => $recentOrders,
                 'dailyRevenue' => $dailyRevenue,
+                'orderStatusCounts' => $orderStatusCounts,
+                'stockReport' => $stockReport,
+                'newCustomers' => $newCustomers,
+                'metrics' => $metrics,
                 'categories' => $categories,
                 'brands' => $brands,
             ];

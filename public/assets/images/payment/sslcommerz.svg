@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 50" width="80" height="50">
+  <rect width="80" height="50" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2"/>
+  <!-- Shield & Lock icon -->
+  <g transform="translate(6, 14)">
+    <path d="M8.5 1L2 4v6c0 4.8 3 9.2 6.5 10.5 3.5-1.3 6.5-5.7 6.5-10.5V4L8.5 1z" fill="#004B8D"/>
+    <!-- Lock symbol -->
+    <rect x="6.2" y="9.5" width="4.6" height="4" rx="0.8" fill="#ffffff"/>
+    <path d="M7.3 9.5V8a1.2 1.2 0 0 1 2.4 0v1.5" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/>
+  </g>
+  <!-- Brand text -->
+  <g transform="translate(26, 23)">
+    <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="900" font-size="8.5">
+      <tspan fill="#EE3124">SSL</tspan><tspan fill="#004B8D">COMMERZ</tspan>
+    </text>
+    <text x="0.5" y="9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif" font-weight="700" font-size="4.5" fill="#64748B" letter-spacing="0.8">SECURE PAY</text>
+  </g>
+</svg>

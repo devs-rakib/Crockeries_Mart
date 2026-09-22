@@ -18,11 +18,11 @@ class OrderController
     {
         Auth::requireLogin();
 
-        $orders = $this->orderModel->getAllAdmin(1, 50);
+        $orders = $this->orderModel->getByUserId(Auth::id());
 
         $data = [
             'pageTitle' => 'My Orders',
-            'orders'    => $orders['orders'],
+            'orders'    => $orders,
         ];
 
         require APP_ROOT . '/views/layouts/header.php';
@@ -32,9 +32,17 @@ class OrderController
 
     public function track(string $orderNumber): void
     {
+        Auth::requireLogin();
+
         $order = $this->orderModel->getByNumber($orderNumber);
         if (!$order) {
             http_response_code(404);
+            require APP_ROOT . '/views/404.php';
+            return;
+        }
+
+        if ((int)$order['user_id'] !== (int)Auth::id()) {
+            http_response_code(403);
             require APP_ROOT . '/views/404.php';
             return;
         }

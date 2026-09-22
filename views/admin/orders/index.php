@@ -1,6 +1,17 @@
 <?php
 use App\Helpers\CSRF;
 use App\Helpers\Sanitizer;
+use App\Models\Order;
+
+$mainStatuses = [
+    'pending'   => 'pending',
+    'confirmed' => 'confirmed',
+    'processing'=> 'processing',
+    'shipped'   => 'shipped',
+    'out_for_delivery' => 'out_for_delivery',
+    'delivered' => 'delivered',
+    'cancelled' => 'cancelled',
+];
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Orders</h4>
@@ -11,32 +22,21 @@ use App\Helpers\Sanitizer;
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <ul class="nav nav-pills">
+        <ul class="nav nav-pills flex-wrap" style="gap:4px;">
             <li class="nav-item">
                 <a class="nav-link <?= empty($status) ? 'active' : '' ?>" href="<?= ADMIN_URL ?>orders">
-                    All
+                    All <span class="badge bg-secondary ms-1"><?= $total ?? 0 ?></span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link <?= ($status ?? '') === 'pending' ? 'active' : '' ?>" href="<?= ADMIN_URL ?>orders?status=pending">
-                    Pending
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= ($status ?? '') === 'processing' ? 'active' : '' ?>" href="<?= ADMIN_URL ?>orders?status=processing">
-                    Processing
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= ($status ?? '') === 'completed' ? 'active' : '' ?>" href="<?= ADMIN_URL ?>orders?status=completed">
-                    Completed
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= ($status ?? '') === 'cancelled' ? 'active' : '' ?>" href="<?= ADMIN_URL ?>orders?status=cancelled">
-                    Cancelled
-                </a>
-            </li>
+            <?php foreach ($mainStatuses as $label => $key):
+                $count = $statusCounts[$key] ?? 0;
+            ?>
+                <li class="nav-item">
+                    <a class="nav-link <?= ($status ?? '') === $key ? 'active' : '' ?>" href="<?= ADMIN_URL ?>orders?status=<?= $key ?>">
+                        <?= ucfirst(str_replace('_', ' ', $label)) ?> <span class="badge bg-secondary ms-1"><?= $count ?></span>
+                    </a>
+                </li>
+            <?php endforeach; ?>
         </ul>
     </div>
 </div>
@@ -45,7 +45,7 @@ use App\Helpers\Sanitizer;
     <div class="card-body p-0">
         <?php if (empty($orders)): ?>
             <div class="text-center py-5">
-                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                <i class="bi bi-cart fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">No orders found</h5>
                 <p class="text-muted">There are no orders matching your criteria.</p>
             </div>
@@ -65,14 +65,16 @@ use App\Helpers\Sanitizer;
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($orders as $order): ?>
+                        <?php foreach ($orders as $order):
+                            $statusInfo = Order::getStatusInfo($order['order_status']);
+                        ?>
                             <tr>
                                 <td>
                                     <strong>#<?= Sanitizer::clean($order['order_number']) ?></strong>
                                 </td>
                                 <td><?= Sanitizer::clean($order['customer_name']) ?></td>
-                                <td><?= Sanitizer::clean($order['phone']) ?></td>
-                                <td class="text-end fw-bold">₹<?= number_format($order['total_amount'], 2) ?></td>
+                                <td><?= Sanitizer::clean($order['customer_phone']) ?></td>
+                                <td class="text-end fw-bold">৳<?= number_format($order['total_amount'], 2) ?></td>
                                 <td class="text-center">
                                     <?php if (($order['payment_status'] ?? '') === 'paid'): ?>
                                         <span class="badge bg-success">Paid</span>
@@ -83,22 +85,12 @@ use App\Helpers\Sanitizer;
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center">
-                                    <?php
-                                    $statusClasses = [
-                                        'pending' => 'bg-warning text-dark',
-                                        'processing' => 'bg-info',
-                                        'completed' => 'bg-success',
-                                        'cancelled' => 'bg-danger',
-                                        'shipped' => 'bg-primary',
-                                    ];
-                                    $statusClass = $statusClasses[$order['status']] ?? 'bg-secondary';
-                                    ?>
-                                    <span class="badge <?= $statusClass ?>"><?= ucfirst(Sanitizer::clean($order['status'])) ?></span>
+                                    <span class="badge <?= $statusInfo['color'] ?>"><?= Sanitizer::clean($statusInfo['label']) ?></span>
                                 </td>
                                 <td><?= date('d M Y, h:i A', strtotime($order['created_at'])) ?></td>
                                 <td class="text-center">
                                     <a href="<?= ADMIN_URL ?>orders/view/<?= (int)$order['id'] ?>" class="btn btn-sm btn-outline-primary" title="View Details">
-                                        <i class="fas fa-eye"></i>
+                                        <i class="bi bi-eye"></i>
                                     </a>
                                 </td>
                             </tr>

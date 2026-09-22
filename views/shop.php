@@ -41,6 +41,7 @@
     </h1>
 </div>
 
+<div class="shop-page-wrap">
 <div class="container">
     <div class="row">
 
@@ -206,10 +207,10 @@
             <?php endif; ?>
 
             <!-- Product Grid -->
-            <div id="productGrid" class="row g-4">
+            <div id="productGrid" class="row g-2 gy-3">
                 <?php if (!empty($products)): ?>
                     <?php foreach ($products as $index => $product): ?>
-                        <div class="col-6 col-md-4 col-lg-4 product-card-wrapper">
+                        <div class="col-6 col-md-4 col-lg-3 product-card-wrapper">
                             <?php
                             $currentProduct = $product;
                             $sanitize = function ($input) {
@@ -282,20 +283,13 @@
                 </nav>
             <?php endif; ?>
 
-            <!-- Load More Button (Alternative AJAX) -->
-            <?php if ($pagination['page'] < $pagination['total_pages']): ?>
-                <div id="loadMoreContainer" class="text-center mt-4">
-                    <button id="loadMoreBtn" class="btn btn-outline-primary btn-lg" data-page="<?= $pagination['page'] + 1 ?>">
-                        <i class="fas fa-plus me-2"></i>Load More Products
-                    </button>
-                </div>
-            <?php endif; ?>
-
         </div>
     </div>
 </div>
+</div>
 
 <style>
+.shop-page-wrap { padding-bottom: 60px; }
 .category-tree li {
     border-bottom: 1px solid #f0f0f0;
 }
@@ -321,7 +315,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const shopForm = document.getElementById('shopForm');
     const sortSelect = document.getElementById('sortSelect');
     const productGrid = document.getElementById('productGrid');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
 
     // AJAX Sort
     sortSelect.addEventListener('change', function() {
@@ -348,50 +341,6 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = url.toString();
         });
     });
-
-    // Load More AJAX
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
-            const page = this.dataset.page;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
-            this.disabled = true;
-
-            const url = new URL(window.location);
-            url.searchParams.set('page', page);
-            url.searchParams.set('ajax', '1');
-
-            fetch(url.toString())
-                .then(response => response.json())
-                .then(data => {
-                    if (data.products && data.products.length > 0) {
-                        // Append new products to grid
-                        data.products.forEach(product => {
-                            // Build product card HTML
-                            const col = document.createElement('div');
-                            col.className = 'col-6 col-md-4 col-lg-4 product-card-wrapper';
-                            col.innerHTML = buildProductCard(product);
-                            productGrid.appendChild(col);
-                        });
-
-                        // Update load more button
-                        if (data.next_page) {
-                            loadMoreBtn.dataset.page = data.next_page;
-                            loadMoreBtn.innerHTML = '<i class="fas fa-plus me-2"></i>Load More Products';
-                            loadMoreBtn.disabled = false;
-                        } else {
-                            loadMoreBtn.parentElement.style.display = 'none';
-                        }
-                    } else {
-                        loadMoreBtn.parentElement.style.display = 'none';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading products:', error);
-                    loadMoreBtn.innerHTML = '<i class="fas fa-plus me-2"></i>Load More Products';
-                    loadMoreBtn.disabled = false;
-                });
-        });
-    }
 
     function buildProductCard(product) {
         return `

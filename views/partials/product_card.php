@@ -14,7 +14,7 @@ $productImage = $product['main_image'] ?? $product['image'] ?? '';
 $categoryName = $product['category_name'] ?? '';
 $categoryId   = $product['category_id'] ?? '';
 $regularPrice = $product['price'] ?? 0;
-$salePrice    = $product['sale_price'] ?? 0;
+$salePrice    = $product['discount_price'] ?? 0;
 $discount     = $product['discount'] ?? 0;
 $rating       = $product['rating'] ?? 0;
 $ratingCount  = $product['rating_count'] ?? 0;
@@ -78,11 +78,11 @@ $formattedRegularPrice = Sanitizer::banglaPrice($regularPrice);
         <!-- Action Buttons -->
         <div class="product-actions">
             <button type="button" class="action-btn wishlist-btn" data-product-id="<?= $productId ?>" title="Add to Wishlist">
-                <i class="far fa-heart"></i>
+                <i class="bi bi-heart"></i>
             </button>
-            <button type="button" class="action-btn quick-view-btn" data-product-id="<?= $productId ?>" title="Quick View">
-                <i class="far fa-eye"></i>
-            </button>
+            <a href="<?= $productUrl ?>" class="action-btn quick-view-btn" title="Quick View">
+                <i class="bi bi-eye"></i>
+            </a>
         </div>
     </div>
 
@@ -114,13 +114,13 @@ $formattedRegularPrice = Sanitizer::banglaPrice($regularPrice);
                     $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
 
                     for ($i = 0; $i < $fullStars; $i++):
-                        echo '<i class="fas fa-star"></i>';
+                        echo '<i class="bi bi-star-fill"></i>';
                     endfor;
                     if ($halfStar):
-                        echo '<i class="fas fa-star-half-alt"></i>';
+                        echo '<i class="bi bi-star-half"></i>';
                     endif;
                     for ($i = 0; $i < $emptyStars; $i++):
-                        echo '<i class="far fa-star"></i>';
+                        echo '<i class="bi bi-star"></i>';
                     endfor;
                     ?>
                 </span>
@@ -143,20 +143,16 @@ $formattedRegularPrice = Sanitizer::banglaPrice($regularPrice);
         <div class="product-btn-group">
             <button type="button"
                     class="btn btn-order btn-sm"
-                    data-action="order-now"
-                    data-product-id="<?= $productId ?>"
+                    data-buy-now="<?= $productId ?>"
                     data-product-name="<?= htmlspecialchars($productName) ?>"
                     <?= !$isInStock ? 'disabled' : '' ?>>
-                <i class="fas fa-shopping-bag me-1"></i>
                 <?= $isInStock ? 'Order Now' : 'Out of Stock' ?>
             </button>
             <button type="button"
                     class="btn btn-add-cart btn-sm"
-                    data-action="add-to-cart"
-                    data-product-id="<?= $productId ?>"
+                    data-add-to-cart="<?= $productId ?>"
                     data-product-name="<?= htmlspecialchars($productName) ?>"
                     <?= !$isInStock ? 'disabled' : '' ?>>
-                <i class="fas fa-cart-plus me-1"></i>
                 Add to Cart
             </button>
         </div>

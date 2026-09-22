@@ -7,7 +7,8 @@
 
 const Cart = (() => {
     const STORAGE_KEY = 'crockeries_cart';
-    const AJAX_URL = 'ajax_handler.php';
+    const BASE_URL = document.querySelector('meta[name="base-url"]')?.content || '';
+    const AJAX_URL = BASE_URL + '/ajax_handler.php';
     let items = [];
     let isLoading = false;
 
@@ -37,7 +38,7 @@ const Cart = (() => {
 
     const formatPrice = (price) => {
         const num = parseFloat(price);
-        return isNaN(num) ? '₦0.00' : '₦' + num.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+        return isNaN(num) ? '৳0' : '৳' + num.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     };
 
     const escapeHtml = (str) => {
@@ -52,7 +53,14 @@ const Cart = (() => {
         }
     };
 
-    const calcTotal = () => items.reduce((sum, i) => sum + (parseFloat(i.price) * parseInt(i.quantity)), 0);
+    const openDrawer = () => {
+        const el = document.getElementById('cartDrawer');
+        if (!el) return;
+        const instance = bootstrap.Offcanvas.getOrCreateInstance(el);
+        if (instance && !instance._isShown) instance.show();
+    };
+
+    const calcTotal = () => items.reduce((sum, i) => sum + (parseFloat(i.discount_price || i.price) * parseInt(i.quantity)), 0);
     const calcCount = () => items.reduce((sum, i) => sum + parseInt(i.quantity), 0);
 
     // ── API Calls ────────────────────────────────────────────────
@@ -117,6 +125,9 @@ const Cart = (() => {
                 saveLocal();
                 renderCartDrawer(items);
                 updateCartBadge(calcCount());
+                if (typeof window.updateShippingBar === 'function') {
+                    window.updateShippingBar(calcTotal());
+                }
             } else {
                 toast(res.message || 'Update failed.', 'error');
             }
@@ -138,6 +149,9 @@ const Cart = (() => {
                 saveLocal();
                 renderCartDrawer(items);
                 updateCartBadge(calcCount());
+                if (typeof window.updateShippingBar === 'function') {
+                    window.updateShippingBar(calcTotal());
+                }
                 toast(res.message || 'Item removed.', 'success');
             } else {
                 toast(res.message || 'Remove failed.', 'error');
@@ -159,6 +173,9 @@ const Cart = (() => {
         saveLocal();
         renderCartDrawer(items);
         updateCartBadge(calcCount());
+        if (typeof window.updateShippingBar === 'function') {
+            window.updateShippingBar(calcTotal());
+        }
         return items;
     };
 
@@ -176,7 +193,7 @@ const Cart = (() => {
             });
 
             if (res.success) {
-                window.location.href = 'checkout.php';
+                window.location.href = BASE_URL + '/checkout';
             } else {
                 toast(res.message || 'Failed. Please try again.', 'error');
             }
@@ -191,35 +208,35 @@ const Cart = (() => {
         const drawer = document.getElementById('cartDrawer');
         if (!drawer) return;
 
-        const body = drawer.querySelector('.cart-drawer__body');
-        const footer = drawer.querySelector('.cart-drawer__footer');
+        const body = document.getElementById('cartItems');
+        const footer = document.getElementById('cartFooter');
         if (!body) return;
 
         if (!cartItems || cartItems.length === 0) {
             body.innerHTML = `
-                <div class="cart-drawer__empty text-center py-5">
-                    <i class="bi bi-bag fs-1 text-muted"></i>
-                    <p class="mt-3 text-muted">Your cart is empty</p>
-                    <a href="products.php" class="btn btn-outline-primary btn-sm mt-2">Start Shopping</a>
+                <div class="cm-cart-empty">
+                    <i class="bi bi-bag-x"></i>
+                    <p>Your cart is empty</p>
+                    <a href="` + BASE_URL + `/shop" class="btn btn-sm btn-outline-primary" style="border-color:var(--cm-primary);color:var(--cm-primary);border-radius:20px;">Start Shopping</a>
                 </div>`;
             if (footer) footer.style.display = 'none';
             return;
         }
 
         body.innerHTML = cartItems.map((item) => `
-            <div class="cart-drawer__item" data-key="${escapeHtml(String(item.key))}">
-                <div class="cart-drawer__item-img">
-                    <img src="${escapeHtml(item.image || 'assets/images/placeholder.jpg')}" alt="${escapeHtml(item.name)}" loading="lazy">
-                </div>
-                <div class="cart-drawer__item-details">
-                    <h6 class="cart-drawer__item-name">${escapeHtml(item.name)}</h6>
-                    ${item.variant ? `<small class="text-muted">${escapeHtml(item.variant)}</small>` : ''}
-                    <div class="cart-drawer__item-price">${formatPrice(item.price)}</div>
-                    <div class="cart-drawer__item-qty d-flex align-items-center mt-1">
-                        <button class="btn btn-sm btn-outline-secondary cart-qty-dec" data-key="${escapeHtml(String(item.key))}" data-action="dec" aria-label="Decrease">−</button>
-                        <input type="number" class="form-control form-control-sm mx-1 text-center cart-qty-input" data-key="${escapeHtml(String(item.key))}" value="${parseInt(item.quantity)}" min="1" max="99" style="width:50px">
-                        <button class="btn btn-sm btn-outline-secondary cart-qty-inc" data-key="${escapeHtml(String(item.key))}" data-action="inc" aria-label="Increase">+</button>
-                        <button class="btn btn-sm btn-link text-danger ms-2 cart-remove-btn" data-key="${escapeHtml(String(item.key))}" aria-label="Remove"><i class="bi bi-trash"></i></button>
+            <div class="cm-cart-item" data-key="${escapeHtml(String(item.key))}">
+                <img src="${BASE_URL}/uploads/${escapeHtml(item.image || 'images/placeholder.svg')}" alt="${escapeHtml(item.name)}" loading="lazy">
+                <div class="item-info flex-grow-1">
+                    <div class="d-flex justify-content-between">
+                        <div class="item-name">${escapeHtml(item.name)}</div>
+                        <button class="item-remove cart-remove-btn" data-key="${escapeHtml(String(item.key))}" title="Remove"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    ${item.variant_name ? '<small class="text-muted">' + escapeHtml(item.variant_name) + '</small>' : ''}
+                    <div class="item-price">${formatPrice(item.discount_price || item.price)}</div>
+                    <div class="qty-control">
+                        <button class="cart-qty-btn cart-qty-dec" data-key="${escapeHtml(String(item.key))}" data-action="decrease">-</button>
+                        <span>${parseInt(item.quantity)}</span>
+                        <button class="cart-qty-btn cart-qty-inc" data-key="${escapeHtml(String(item.key))}" data-action="increase">+</button>
                     </div>
                 </div>
             </div>
@@ -227,16 +244,19 @@ const Cart = (() => {
 
         if (footer) {
             footer.style.display = '';
-            const totalEl = footer.querySelector('.cart-drawer__total');
-            if (totalEl) totalEl.textContent = formatPrice(calcTotal());
+            const subtotalEl = document.getElementById('cartSubtotal');
+            if (subtotalEl) subtotalEl.textContent = formatPrice(calcTotal());
         }
     };
 
     const updateCartBadge = (count) => {
-        document.querySelectorAll('.cart-badge, .cart-count').forEach((el) => {
-            el.textContent = count;
-            el.style.display = count > 0 ? '' : 'none';
-        });
+        const badge = document.getElementById('cartCountBadge');
+        const text = document.getElementById('cartCountText');
+        if (badge) {
+            badge.textContent = count;
+            badge.style.display = count > 0 ? '' : 'none';
+        }
+        if (text) text.textContent = count;
     };
 
     // ── Event Delegation ─────────────────────────────────────────
@@ -266,48 +286,28 @@ const Cart = (() => {
             if (e.target.closest('.cart-qty-inc')) {
                 const btn = e.target.closest('.cart-qty-inc');
                 const key = btn.dataset.key;
-                const input = document.querySelector(`.cart-qty-input[data-key="${key}"]`);
-                const newQty = (input ? parseInt(input.value) : 1) + 1;
-                updateCartItem(key, newQty);
+                const span = btn.parentElement.querySelector('span');
+                const currentQty = span ? parseInt(span.textContent) : 1;
+                updateCartItem(key, currentQty + 1);
                 return;
             }
 
             if (e.target.closest('.cart-qty-dec')) {
                 const btn = e.target.closest('.cart-qty-dec');
                 const key = btn.dataset.key;
-                const input = document.querySelector(`.cart-qty-input[data-key="${key}"]`);
-                const newQty = (input ? parseInt(input.value) : 2) - 1;
-                updateCartItem(key, newQty);
+                const span = btn.parentElement.querySelector('span');
+                const currentQty = span ? parseInt(span.textContent) : 2;
+                if (currentQty > 1) {
+                    updateCartItem(key, currentQty - 1);
+                }
                 return;
             }
 
             if (e.target.closest('.cart-remove-btn')) {
                 const btn = e.target.closest('.cart-remove-btn');
                 const key = btn.dataset.key;
-                if (confirm('Remove this item from cart?')) {
-                    removeFromCart(key);
-                }
+                removeFromCart(key);
                 return;
-            }
-        });
-
-        document.addEventListener('change', (e) => {
-            if (e.target.classList.contains('cart-qty-input')) {
-                const key = e.target.dataset.key;
-                const val = parseInt(e.target.value);
-                if (isNaN(val) || val < 1) {
-                    e.target.value = 1;
-                    updateCartItem(key, 1);
-                } else {
-                    updateCartItem(key, val);
-                }
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.target.classList.contains('cart-qty-input') && e.key === 'Enter') {
-                e.preventDefault();
-                e.target.blur();
             }
         });
     };
@@ -319,7 +319,7 @@ const Cart = (() => {
         loadCart();
     };
 
-    return { init, addToCart, updateCartItem, removeFromCart, loadCart, quickBuyNow, renderCartDrawer, updateCartBadge };
+    return { init, addToCart, updateCartItem, removeFromCart, loadCart, quickBuyNow, renderCartDrawer, updateCartBadge, openDrawer };
 })();
 
 document.addEventListener('DOMContentLoaded', Cart.init);

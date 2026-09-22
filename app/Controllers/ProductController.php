@@ -33,16 +33,19 @@ class ProductController
         $sort = $_GET['sort'] ?? 'newest';
         $page = (int) ($_GET['page'] ?? 1);
 
+        $isOffer = str_contains($_SERVER['REQUEST_URI'] ?? '', '/offer');
+
         $filters = [];
         if ($categoryId) $filters['category_id'] = $categoryId;
         if ($brandId) $filters['brand_id'] = $brandId;
         if ($minPrice) $filters['min_price'] = $minPrice;
         if ($maxPrice) $filters['max_price'] = $maxPrice;
+        if ($isOffer) $filters['is_offer'] = 1;
 
         $result = $this->productModel->getAll($filters, $page, ITEMS_PER_PAGE, $sort);
 
         $data = [
-            'pageTitle'  => 'Shop',
+            'pageTitle'  => $isOffer ? 'Special Offers' : 'Shop',
             'products'   => $result['products'],
             'pagination' => $result,
             'filters'    => $filters,
@@ -69,16 +72,17 @@ class ProductController
 
         $this->productModel->incrementViews($product['id']);
 
+        $reviews = $this->reviewModel->getByProduct($product['id']);
         $data = [
             'pageTitle'       => $product['name'],
             'product'         => $product,
             'images'          => $this->productModel->getImages($product['id']),
             'variants'        => $this->productModel->getVariants($product['id']),
             'relatedProducts' => $this->productModel->getRelated($product['id'], $product['category_id']),
-            'reviews'         => $this->reviewModel->getByProduct($product['id']),
+            'reviews'         => $reviews,
             'avgRating'       => $this->reviewModel->getAverageRating($product['id']),
             'ratingDist'      => $this->reviewModel->getRatingDistribution($product['id']),
-            'reviewCount'     => count($this->reviewModel->getByProduct($product['id'])),
+            'reviewCount'     => count($reviews),
         ];
 
         require APP_ROOT . '/views/layouts/header.php';
@@ -88,9 +92,9 @@ class ProductController
 
     public function search(): void
     {
-        $query = trim($_POST['query'] ?? $_GET['query'] ?? '');
+        $query = trim($_POST['query'] ?? $_GET['query'] ?? $_POST['q'] ?? $_GET['q'] ?? '');
         if (strlen($query) < 2) {
-            Response::json(['products' => []]);
+            Response::json(['success' => true, 'results' => [], 'products' => []]);
         }
 
         $products = $this->productModel->search($query, 10);
@@ -101,6 +105,7 @@ class ProductController
                 'name'        => $p['name'],
                 'slug'        => $p['slug'],
                 'image'       => Sanitizer::image($p['main_image']),
+                'main_image'  => Sanitizer::image($p['main_image']),
                 'price'       => $p['price'],
                 'discount_price' => $p['discount_price'],
                 'category'    => $p['category_name'],
@@ -108,7 +113,7 @@ class ProductController
             ];
         }
 
-        Response::json(['products' => $results]);
+        Response::json(['success' => true, 'results' => $results, 'products' => $results]);
     }
 
     public function filter(): void

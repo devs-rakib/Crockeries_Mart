@@ -86,7 +86,7 @@ use App\Helpers\Sanitizer;
                 <div class="card-body">
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-save me-1"></i> Save Settings
+                            <i class="bi bi-check-lg me-1"></i> Save Settings
                         </button>
                     </div>
                 </div>
@@ -99,9 +99,75 @@ use App\Helpers\Sanitizer;
                 <div class="card-body">
                     <div class="alert alert-info mb-0">
                         <small>
-                            <i class="fas fa-info-circle me-1"></i>
+                            <i class="bi bi-info-circle me-1"></i>
                             SMTP settings are configured in <code>config/config.php</code>. 
                             Update SMTP_HOST, SMTP_USER, SMTP_PASS constants to enable email.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Backup -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-database me-2"></i>Database Backup</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="<?= ADMIN_URL ?>settings/backup" class="mb-3">
+                        <?= CSRF::field() ?>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-outline-primary" onclick="this.disabled=true;this.innerHTML='<span class=\'spinner-border spinner-border-sm me-2\'></span>Creating...'">
+                                <i class="bi bi-download me-1"></i> Create Backup Now
+                            </button>
+                        </div>
+                    </form>
+
+                    <?php if (!empty($backups)): ?>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>File</th>
+                                        <th class="text-end">Size</th>
+                                        <th class="text-center" style="width:80px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($backups as $backup): ?>
+                                        <tr>
+                                            <td>
+                                                <small class="text-muted"><?= $backup['name'] ?></small>
+                                                <br><small class="text-muted"><?= $backup['date'] ?></small>
+                                            </td>
+                                            <td class="text-end"><small><?= $backup['size_fmt'] ?></small></td>
+                                            <td class="text-center">
+                                                <a href="<?= ADMIN_URL ?>settings/download/<?= urlencode($backup['name']) ?>" class="btn btn-sm btn-outline-success" title="Download">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                <form method="POST" action="<?= ADMIN_URL ?>settings/deleteBackup/<?= urlencode($backup['name']) ?>" class="d-inline" onsubmit="return confirm('Delete this backup?')">
+                                                    <?= CSRF::field() ?>
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-inbox" style="font-size:24px;"></i>
+                            <p class="mb-0 mt-2">No backups yet</p>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="alert alert-info mt-3 mb-0">
+                        <small>
+                            <i class="bi bi-info-circle me-1"></i>
+                            Auto-cleanup: backups older than 30 days are removed automatically.
+                            For scheduled backups, run <code>storage/backups/backup.bat</code> via Windows Task Scheduler.
                         </small>
                     </div>
                 </div>

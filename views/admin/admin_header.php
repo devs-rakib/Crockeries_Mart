@@ -20,15 +20,17 @@ $adminName = Session::get('user_name') ?? 'Admin';
     <link href="<?= APP_URL ?>/assets/css/admin.css" rel="stylesheet">
     <style>
         :root {
-            --admin-sidebar-width: 250px;
-            --admin-sidebar-bg: #1a1d21;
-            --admin-sidebar-hover: #2d3139;
+            --admin-sidebar-width: 260px;
+            --admin-sidebar-bg: #ffffff;
+            --admin-sidebar-hover: #f3f4f6;
             --admin-sidebar-active: #ff3838;
-            --admin-topbar-height: 60px;
+            --admin-topbar-height: 64px;
             --admin-primary: #ff3838;
+            --admin-primary-dark: #e02020;
+            --admin-sidebar-gradient: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f3f6; overflow-x: hidden; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; overflow-x: hidden; }
 
         /* ── Sidebar ── */
         .admin-sidebar {
@@ -37,99 +39,121 @@ $adminName = Session::get('user_name') ?? 'Admin';
             left: 0;
             width: var(--admin-sidebar-width);
             height: 100vh;
-            background: var(--admin-sidebar-bg);
-            color: #a0aec0;
+            background: #14201c;
+            color: #fff;
             z-index: 1040;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
             scrollbar-width: thin;
-            scrollbar-color: #333 transparent;
+            scrollbar-color: #595a5b transparent;
+            /* border-right: 1px solid #e5e7eb; */
         }
         .admin-sidebar::-webkit-scrollbar { width: 4px; }
-        .admin-sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .admin-sidebar::-webkit-scrollbar-track { background: transparent; }
+        .admin-sidebar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        .admin-sidebar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
         .sidebar-logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 20px 20px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
+            gap: 12px;
+            padding: 22px 22px;
+            border-bottom: 1px solid #e5e7eb;
+            text-decoration: none;
         }
-        .sidebar-logo i { font-size: 26px; color: var(--admin-primary); }
-        .sidebar-logo span { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
-        .sidebar-logo em { font-style: normal; color: var(--admin-primary); }
+        .sidebar-logo-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(255, 56, 56, 0.3);
+        }
+        .sidebar-logo-text { font-size: 17px; font-weight: 700; color: #111827; letter-spacing: -0.5px; }
+        .sidebar-logo-text em { font-style: normal; color: var(--admin-primary); }
 
-        .sidebar-nav { padding: 12px 0; }
+        .sidebar-nav { padding: 16px 0; }
         .sidebar-nav .nav-section {
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #4a5568;
-            padding: 16px 20px 8px;
+            letter-spacing: 1.5px;
+            color: #9ca3af;
+            padding: 20px 24px 10px;
         }
-        .sidebar-nav .nav-item { list-style: none; }
+        .sidebar-nav .nav-item { list-style: none; padding: 0 12px; }
         .sidebar-nav .nav-link {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 11px 20px;
-            color: #a0aec0;
+            padding: 11px 14px;
+            color: #fff;
             font-size: 14px;
             font-weight: 500;
             text-decoration: none;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+            margin-bottom: 2px;
         }
         .sidebar-nav .nav-link:hover {
             background: var(--admin-sidebar-hover);
-            color: #e2e8f0;
+            color: #111827;
+            transform: translateX(2px);
         }
         .sidebar-nav .nav-link.active {
-            background: rgba(255, 56, 56, 0.1);
-            color: #fff;
-            border-left-color: var(--admin-primary);
+            background: rgba(255, 56, 56, 0.08);
+            color: #ff3838;
+            font-weight: 600;
         }
-        .sidebar-nav .nav-link i { font-size: 18px; width: 22px; text-align: center; }
+        .sidebar-nav .nav-link.active i {
+            color: var(--admin-primary);
+        }
+        .sidebar-nav .nav-link i { font-size: 18px; width: 22px; text-align: center; transition: all 0.25s; }
 
-        .sidebar-nav .submenu { list-style: none; padding: 0; }
+        .sidebar-nav .submenu { list-style: none; padding: 0; margin: 0 0 0 12px; }
         .sidebar-nav .submenu .nav-link {
-            padding-left: 54px;
+            padding: 9px 14px 9px 44px;
             font-size: 13px;
+            border-radius: 8px;
         }
         .sidebar-nav .submenu .nav-link::before {
             content: '';
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #4a5568;
+            background: #d1d5db;
             flex-shrink: 0;
-            transition: background 0.2s;
+            transition: all 0.25s;
         }
         .sidebar-nav .submenu .nav-link.active::before,
         .sidebar-nav .submenu .nav-link:hover::before { background: var(--admin-primary); }
 
-        .nav-toggle-icon { margin-left: auto; font-size: 12px; transition: transform 0.2s; }
+        .nav-toggle-icon { margin-left: auto; font-size: 12px; transition: transform 0.25s; }
         .nav-toggle-icon.rotated { transform: rotate(90deg); }
 
         /* ── Main Content ── */
         .admin-main {
             margin-left: var(--admin-sidebar-width);
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* ── Top Bar ── */
         .admin-topbar {
             height: var(--admin-topbar-height);
-            background: #fff;
-            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
-            padding: 0 24px;
+            padding: 0 28px;
             position: sticky;
             top: 0;
             z-index: 1030;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
         .admin-topbar .sidebar-toggle {
             display: none;
@@ -139,7 +163,10 @@ $adminName = Session::get('user_name') ?? 'Admin';
             color: #4a5568;
             cursor: pointer;
             padding: 6px;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
+        .admin-topbar .sidebar-toggle:hover { background: #f3f4f6; }
         .admin-topbar .topbar-right {
             margin-left: auto;
             display: flex;
@@ -149,43 +176,45 @@ $adminName = Session::get('user_name') ?? 'Admin';
         .admin-topbar .admin-info {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 14px;
             font-weight: 500;
             color: #2d3748;
         }
         .admin-topbar .admin-info .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--admin-primary);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
             font-weight: 700;
+            box-shadow: 0 2px 8px rgba(255, 56, 56, 0.25);
         }
         .admin-topbar .logout-btn {
             display: flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 14px;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
             font-size: 13px;
             font-weight: 500;
             color: #e53e3e;
             text-decoration: none;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            border: 1px solid transparent;
         }
-        .admin-topbar .logout-btn:hover { background: #fff5f5; }
+        .admin-topbar .logout-btn:hover { background: #fff5f5; border-color: #fecaca; }
 
         /* ── Flash Messages ── */
-        .admin-flash { padding: 0 24px; margin-top: 16px; }
-        .admin-flash .alert { border-radius: 8px; font-size: 14px; border: none; }
+        .admin-flash { padding: 0 28px; margin-top: 16px; }
+        .admin-flash .alert { border-radius: 10px; font-size: 14px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
         /* ── Content ── */
-        #content { padding: 24px; }
+        #content { padding: 28px; }
 
         /* ── Mobile Overlay ── */
         .sidebar-overlay {
@@ -193,6 +222,7 @@ $adminName = Session::get('user_name') ?? 'Admin';
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
             z-index: 1035;
         }
 
@@ -204,7 +234,11 @@ $adminName = Session::get('user_name') ?? 'Admin';
             .admin-topbar .sidebar-toggle { display: block; }
             .sidebar-overlay.show { display: block; }
         }
+        .card {
+            background: #05516008 !important;
+        }
     </style>
+
 </head>
 <body>
 
@@ -214,8 +248,8 @@ $adminName = Session::get('user_name') ?? 'Admin';
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="admin-sidebar" id="adminSidebar">
     <div class="sidebar-logo">
-        <i class="bi bi-box-seam-fill"></i>
-        <span><em>CM</em> Admin</span>
+        <div class="sidebar-logo-icon"><i class="bi bi-box-seam-fill"></i></div>
+        <div class="sidebar-logo-text"><em>CM</em> Admin</div>
     </div>
 
     <nav class="sidebar-nav">
@@ -289,6 +323,12 @@ $adminName = Session::get('user_name') ?? 'Admin';
                 </a>
             </li>
 
+            <li class="nav-item">
+                <a href="<?= APP_URL ?>/admin/support" class="nav-link <?= (strpos($currentUrl, '/admin/support') !== false) ? 'active' : '' ?>">
+                    <i class="bi bi-headset"></i> Support Tickets
+                </a>
+            </li>
+
             <div class="nav-section">System</div>
 
             <li class="nav-item">
@@ -314,6 +354,9 @@ $adminName = Session::get('user_name') ?? 'Admin';
                 <div class="avatar"><?= strtoupper(substr($adminName, 0, 1)) ?></div>
                 <span><?= htmlspecialchars($adminName) ?></span>
             </div>
+            <a href="<?= APP_URL ?>" class="logout-btn" target="_blank" style="background:var(--admin-sidebar-hover);color:var(--text-dark);margin-right:8px;">
+                <i class="bi bi-globe"></i> View Website
+            </a>
             <a href="<?= APP_URL ?>/admin/logout" class="logout-btn">
                 <i class="bi bi-box-arrow-right"></i> Logout
             </a>

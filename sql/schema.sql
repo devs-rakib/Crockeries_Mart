@@ -18,16 +18,16 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name`       VARCHAR(100)    NOT NULL,
-  `email`      VARCHAR(150)    NOT NULL,
-  `phone`      VARCHAR(20)     DEFAULT NULL,
+  `email`      VARCHAR(150)    DEFAULT NULL,
+  `phone`      VARCHAR(20)     NOT NULL,
   `password`   VARCHAR(255)    NOT NULL,
   `role`       ENUM('admin','customer') NOT NULL DEFAULT 'customer',
   `status`     TINYINT         NOT NULL DEFAULT 1,
   `created_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_users_email` (`email`),
-  INDEX `idx_users_phone` (`phone`),
+  UNIQUE KEY `uk_users_phone` (`phone`),
+  INDEX `idx_users_email` (`email`),
   INDEX `idx_users_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -164,11 +164,13 @@ CREATE TABLE `orders` (
   `shipping_cost`   DECIMAL(10,2)   NOT NULL DEFAULT 0.00,
   `payment_method`  VARCHAR(50)     NOT NULL,
   `payment_status`  ENUM('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+  `transaction_id`  VARCHAR(100)    DEFAULT NULL,
   `order_status`    ENUM('pending','processing','completed','cancelled') NOT NULL DEFAULT 'pending',
   `created_at`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_orders_number` (`order_number`),
+  UNIQUE KEY `uk_orders_transaction` (`transaction_id`),
   INDEX `idx_orders_user` (`user_id`),
   INDEX `idx_orders_customer_phone` (`customer_phone`),
   INDEX `idx_orders_status` (`order_status`),
@@ -345,6 +347,22 @@ CREATE TABLE `contacts` (
   INDEX `idx_contacts_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ============================================================
+-- 17. otp_tokens
+-- ============================================================
+DROP TABLE IF EXISTS `otp_tokens`;
+CREATE TABLE `otp_tokens` (
+  `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `phone`      VARCHAR(20)     NOT NULL,
+  `otp_code`   VARCHAR(6)      NOT NULL,
+  `expires_at` DATETIME        NOT NULL,
+  `used`       TINYINT         NOT NULL DEFAULT 0,
+  `created_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_otp_phone` (`phone`),
+  INDEX `idx_otp_expires` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
@@ -374,27 +392,27 @@ VALUES
 -- ------------------------------------------------------------
 INSERT INTO `categories` (`id`, `parent_id`, `name`, `slug`, `icon_class`, `image`, `is_featured`, `status`, `position`)
 VALUES
-(1,  NULL, 'Dinner Sets',        'dinner-sets',        'fas fa-utensils', NULL,        1, 1, 1),
-(2,  NULL, 'Tea & Coffee Sets',  'tea-coffee-sets',    'fas fa-mug-hot',  NULL,        1, 1, 2),
-(3,  NULL, 'Bowls & Plates',     'bowls-plates',       'fas fa-circle',   NULL,        1, 1, 3),
-(4,  NULL, 'Bakeware',           'bakeware',           'fas fa-bread-slice',NULL,     1, 1, 4),
-(5,  NULL, 'Serveware',          'serveware',          'fas fa-concierge-bell',NULL,  1, 1, 5),
-(6,  NULL, 'Storage & Jars',     'storage-jars',       'fas fa-jar',      NULL,        0, 1, 6),
-(7,  NULL, 'Glassware',          'glassware',          'fas fa-wine-glass',NULL,       1, 1, 7),
-(8,  NULL, 'Kitchen Accessories', 'kitchen-accessories','fas fa-blender',  NULL,        0, 1, 8),
-(9,  1,    'Bone China Sets',    'bone-china-sets',    NULL,              NULL,                                       0, 1, 1),
-(10, 1,    'Melamine Sets',      'melamine-sets',      NULL,              NULL,                                       0, 1, 2);
+(1,  NULL, 'Dinner Sets',        'dinner-sets',        'bi bi-egg-fried',          NULL, 1, 1, 1),
+(2,  NULL, 'Tea & Coffee Sets',  'tea-coffee-sets',    'bi bi-cup-hot',            NULL, 1, 1, 2),
+(3,  NULL, 'Bowls & Plates',     'bowls-plates',       'bi bi-record-circle',      NULL, 1, 1, 3),
+(4,  NULL, 'Bakeware',           'bakeware',           'bi bi-cake',               NULL, 1, 1, 4),
+(5,  NULL, 'Serveware',          'serveware',          'bi bi-hand-index-thumb',   NULL, 1, 1, 5),
+(6,  NULL, 'Storage & Jars',     'storage-jars',       'bi bi-box-seam',           NULL, 0, 1, 6),
+(7,  NULL, 'Glassware',          'glassware',          'bi bi-cup-straw',          NULL, 1, 1, 7),
+(8,  NULL, 'Kitchen Accessories', 'kitchen-accessories','bi bi-gear-wide-connected',NULL, 0, 1, 8),
+(9,  1,    'Bone China Sets',    'bone-china-sets',    NULL,                       NULL, 0, 1, 1),
+(10, 1,    'Melamine Sets',      'melamine-sets',      NULL,                       NULL, 0, 1, 2);
 
 -- ------------------------------------------------------------
 -- Brands (5)
 -- ------------------------------------------------------------
 INSERT INTO `brands` (`id`, `name`, `slug`, `logo`, `status`)
 VALUES
-(1, 'Prestige',        'prestige',         'images/brands/prestige.png',         1),
-(2, 'Miyako',          'miyako',           'images/brands/miyako.png',           1),
-(3, 'Walton',          'walton',           'images/brands/walton.png',           1),
-(4, 'Sonali',          'sonali',           'images/brands/sonali.png',           1),
-(5, 'Fine Ceramics',   'fine-ceramics',    'images/brands/fine-ceramics.png',    1);
+(1, 'Prestige',        'prestige',         'images/brands/prestige.svg',         1),
+  (2, 'Miyako',          'miyako',           'images/brands/miyako.svg',           1),
+  (3, 'Walton',          'walton',           'images/brands/walton.svg',           1),
+  (4, 'Sonali',          'sonali',           'images/brands/sonali.svg',           1),
+  (5, 'Fine Ceramics',   'fine-ceramics',    'images/brands/fine-ceramics.svg',    1);
 
 -- ------------------------------------------------------------
 -- Products (20) — prices in BDT

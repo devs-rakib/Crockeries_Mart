@@ -1,6 +1,12 @@
 <?php
 use App\Helpers\CSRF;
 use App\Helpers\Sanitizer;
+use App\Models\Order;
+
+$statusInfo = Order::getStatusInfo($order['order_status']);
+$normalFlow = Order::NORMAL_FLOW;
+$currentFlowIndex = array_search($order['order_status'], $normalFlow);
+if ($currentFlowIndex === false) $currentFlowIndex = -1;
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -8,8 +14,52 @@ use App\Helpers\Sanitizer;
         <small class="text-muted">Placed on <?= date('d M Y, h:i A', strtotime($order['created_at'])) ?></small>
     </div>
     <a href="<?= ADMIN_URL ?>orders" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back to Orders
+        <i class="bi bi-arrow-left me-1"></i> Back to Orders
     </a>
+</div>
+
+<!-- Progress Tracker -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h6 class="mb-3 fw-bold">Order Progress</h6>
+        <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 0;">
+            <?php foreach ($normalFlow as $i => $step):
+                $stepInfo = Order::getStatusInfo($step);
+                $isCompleted = $i < $currentFlowIndex;
+                $isCurrent = $i === $currentFlowIndex;
+            ?>
+                <div class="text-center flex-fill" style="min-width: 80px; position: relative;">
+                    <div style="margin: 0 auto; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;
+                        <?php if ($isCompleted): ?>
+                            background: var(--cm-primary); color: #fff;
+                        <?php elseif ($isCurrent): ?>
+                            background: var(--cm-primary); color: #fff; box-shadow: 0 0 0 4px rgba(255,56,56,.2);
+                        <?php else: ?>
+                            background: #e9ecef; color: #adb5bd;
+                        <?php endif; ?>">
+                        <?php if ($isCompleted): ?>
+                            <i class="bi bi-check-lg"></i>
+                        <?php else: ?>
+                            <?= $i + 1 ?>
+                        <?php endif; ?>
+                    </div>
+                    <div style="font-size: 11px; font-weight: 600; margin-top: 6px; color: <?= $isCompleted || $isCurrent ? 'var(--cm-dark)' : '#adb5bd' ?>;">
+                        <?= $stepInfo['label'] ?>
+                    </div>
+                </div>
+                <?php if ($i < count($normalFlow) - 1): ?>
+                    <div style="flex: 1; height: 2px; min-width: 20px; background: <?= $i < $currentFlowIndex ? 'var(--cm-primary)' : '#e9ecef' ?>;"></div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+        <?php if (!in_array($order['order_status'], $normalFlow)): ?>
+            <div class="mt-3 text-center">
+                <span class="badge <?= $statusInfo['color'] ?> fs-6 px-3 py-2">
+                    <i class="bi <?= $statusInfo['icon'] ?> me-1"></i> <?= Sanitizer::clean($statusInfo['label']) ?>
+                </span>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <div class="row">
@@ -17,17 +67,7 @@ use App\Helpers\Sanitizer;
         <div class="card shadow-sm mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Order Items</h5>
-                <?php
-                $statusClasses = [
-                    'pending' => 'bg-warning text-dark',
-                    'processing' => 'bg-info',
-                    'completed' => 'bg-success',
-                    'cancelled' => 'bg-danger',
-                    'shipped' => 'bg-primary',
-                ];
-                $statusClass = $statusClasses[$order['status']] ?? 'bg-secondary';
-                ?>
-                <span class="badge <?= $statusClass ?> fs-6"><?= ucfirst(Sanitizer::clean($order['status'])) ?></span>
+                <span class="badge <?= $statusInfo['color'] ?> fs-6"><?= Sanitizer::clean($statusInfo['label']) ?></span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -45,43 +85,34 @@ use App\Helpers\Sanitizer;
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <?php if (!empty($item['image'])): ?>
-                                                <img src="<?= Sanitizer::image($item['image']) ?>" alt="" class="rounded me-2" style="width: 45px; height: 45px; object-fit: cover;">
+                                            <?php if (!empty($item['main_image'])): ?>
+                                                <img src="<?= Sanitizer::image($item['main_image']) ?>" alt="" class="rounded me-2" style="width: 45px; height: 45px; object-fit: cover;">
                                             <?php endif; ?>
                                             <div>
                                                 <strong><?= Sanitizer::clean($item['product_name']) ?></strong>
-                                                <?php if (!empty($item['variant'])): ?>
-                                                    <br><small class="text-muted"><?= Sanitizer::clean($item['variant']) ?></small>
-                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="text-center"><?= (int)$item['quantity'] ?></td>
-                                    <td class="text-end">₹<?= number_format($item['price'], 2) ?></td>
-                                    <td class="text-end fw-bold">₹<?= number_format($item['price'] * $item['quantity'], 2) ?></td>
+                                    <td class="text-end">৳<?= number_format($item['unit_price'], 2) ?></td>
+                                    <td class="text-end fw-bold">৳<?= number_format($item['unit_price'] * $item['quantity'], 2) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
                                 <td colspan="3" class="text-end">Subtotal:</td>
-                                <td class="text-end">₹<?= number_format($order['subtotal'] ?? $order['total_amount'], 2) ?></td>
+                                <td class="text-end">৳<?= number_format($order['total_amount'] - ($order['shipping_cost'] ?? 0), 2) ?></td>
                             </tr>
-                            <?php if (!empty($order['shipping_charge'])): ?>
+                            <?php if (!empty($order['shipping_cost'])): ?>
                                 <tr>
                                     <td colspan="3" class="text-end">Shipping:</td>
-                                    <td class="text-end">₹<?= number_format($order['shipping_charge'], 2) ?></td>
-                                </tr>
-                            <?php endif; ?>
-                            <?php if (!empty($order['discount'])): ?>
-                                <tr>
-                                    <td colspan="3" class="text-end text-success">Discount:</td>
-                                    <td class="text-end text-success">-₹<?= number_format($order['discount'], 2) ?></td>
+                                    <td class="text-end">৳<?= number_format($order['shipping_cost'], 2) ?></td>
                                 </tr>
                             <?php endif; ?>
                             <tr class="border-top">
                                 <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
-                                <td class="text-end fw-bold fs-5">₹<?= number_format($order['total_amount'], 2) ?></td>
+                                <td class="text-end fw-bold fs-5">৳<?= number_format($order['total_amount'], 2) ?></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -96,33 +127,22 @@ use App\Helpers\Sanitizer;
                 </div>
                 <div class="card-body">
                     <div class="timeline">
-                        <?php foreach ($history as $entry): ?>
+                        <?php foreach ($history as $entry):
+                            $histInfo = Order::getStatusInfo($entry['status']);
+                        ?>
                             <div class="d-flex mb-3">
                                 <div class="me-3">
-                                    <?php
-                                    $histStatusClasses = [
-                                        'pending' => 'bg-warning text-dark',
-                                        'processing' => 'bg-info',
-                                        'completed' => 'bg-success',
-                                        'cancelled' => 'bg-danger',
-                                        'shipped' => 'bg-primary',
-                                    ];
-                                    $histClass = $histStatusClasses[$entry['status']] ?? 'bg-secondary';
-                                    ?>
-                                    <span class="badge <?= $histClass ?> rounded-circle p-2">
-                                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                    <span class="badge <?= $histInfo['color'] ?> rounded-circle p-2">
+                                        <i class="bi <?= $histInfo['icon'] ?>" style="font-size: 0.5rem;"></i>
                                     </span>
                                 </div>
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between">
-                                        <strong><?= ucfirst(Sanitizer::clean($entry['status'])) ?></strong>
+                                        <strong><?= Sanitizer::clean($histInfo['label']) ?></strong>
                                         <small class="text-muted"><?= date('d M Y, h:i A', strtotime($entry['created_at'])) ?></small>
                                     </div>
                                     <?php if (!empty($entry['note'])): ?>
                                         <p class="text-muted mb-0 mt-1"><?= Sanitizer::clean($entry['note']) ?></p>
-                                    <?php endif; ?>
-                                    <?php if (!empty($entry['changed_by'])): ?>
-                                        <small class="text-muted">by <?= Sanitizer::clean($entry['changed_by']) ?></small>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -140,17 +160,14 @@ use App\Helpers\Sanitizer;
             </div>
             <div class="card-body">
                 <h6 class="mb-3"><?= Sanitizer::clean($order['customer_name']) ?></h6>
-                <p class="mb-1"><i class="fas fa-phone me-2 text-muted"></i> <?= Sanitizer::clean($order['phone']) ?></p>
-                <?php if (!empty($order['email'])): ?>
-                    <p class="mb-1"><i class="fas fa-envelope me-2 text-muted"></i> <?= Sanitizer::clean($order['email']) ?></p>
+                <p class="mb-1"><i class="bi bi-telephone me-2 text-muted"></i> <?= Sanitizer::clean($order['customer_phone']) ?></p>
+                <?php if (!empty($order['customer_email'])): ?>
+                    <p class="mb-1"><i class="bi bi-envelope me-2 text-muted"></i> <?= Sanitizer::clean($order['customer_email']) ?></p>
                 <?php endif; ?>
                 <hr>
-                <p class="mb-1"><i class="fas fa-map-marker-alt me-2 text-muted"></i></p>
+                <p class="mb-1"><i class="bi bi-geo-alt me-2 text-muted"></i></p>
                 <p class="text-muted small mb-0">
-                    <?= Sanitizer::clean($order['address'] ?? '') ?>
-                    <?php if (!empty($order['city'])): ?>, <?= Sanitizer::clean($order['city']) ?><?php endif; ?>
-                    <?php if (!empty($order['state'])): ?>, <?= Sanitizer::clean($order['state']) ?><?php endif; ?>
-                    <?php if (!empty($order['pincode'])): ?> - <?= Sanitizer::clean($order['pincode']) ?><?php endif; ?>
+                    <?= Sanitizer::clean($order['shipping_address'] ?? '') ?>
                 </p>
             </div>
         </div>
@@ -165,11 +182,11 @@ use App\Helpers\Sanitizer;
                     <div class="mb-3">
                         <label for="status" class="form-label">Status</label>
                         <select class="form-select" id="status" name="status" required>
-                            <option value="pending" <?= $order['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
-                            <option value="processing" <?= $order['status'] === 'processing' ? 'selected' : '' ?>>Processing</option>
-                            <option value="shipped" <?= $order['status'] === 'shipped' ? 'selected' : '' ?>>Shipped</option>
-                            <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
-                            <option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                            <?php foreach (Order::STATUSES as $key => $info): ?>
+                                <option value="<?= $key ?>" <?= $order['order_status'] === $key ? 'selected' : '' ?>>
+                                    <?= Sanitizer::clean($info['label']) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -178,7 +195,7 @@ use App\Helpers\Sanitizer;
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i> Update Status
+                            <i class="bi bi-check-lg me-1"></i> Update Status
                         </button>
                     </div>
                 </form>
@@ -195,34 +212,24 @@ use App\Helpers\Sanitizer;
                     <div class="mb-3">
                         <label for="payment_status" class="form-label">Payment Status</label>
                         <select class="form-select" id="payment_status" name="payment_status" required>
-                            <option value="pending" <?= ($order['payment_status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending</option>
-                            <option value="paid" <?= ($order['payment_status'] ?? '') === 'paid' ? 'selected' : '' ?>>Paid</option>
-                            <option value="failed" <?= ($order['payment_status'] ?? '') === 'failed' ? 'selected' : '' ?>>Failed</option>
-                            <option value="refunded" <?= ($order['payment_status'] ?? '') === 'refunded' ? 'selected' : '' ?>>Refunded</option>
+                            <?php foreach (Order::PAYMENT_STATUSES as $ps): ?>
+                                <option value="<?= $ps ?>" <?= ($order['payment_status'] ?? '') === $ps ? 'selected' : '' ?>>
+                                    <?= ucfirst($ps) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="payment_method" class="form-label">Payment Method</label>
-                        <input type="text" class="form-control" id="payment_method" name="payment_method" value="<?= Sanitizer::clean($order['payment_method'] ?? '') ?>" placeholder="e.g., COD, UPI, Card">
+                        <input type="text" class="form-control" id="payment_method" name="payment_method" value="<?= Sanitizer::clean($order['payment_method'] ?? '') ?>" placeholder="e.g. cod, sslcommerz">
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-outline-primary">
-                            <i class="fas fa-save me-1"></i> Update Payment
+                            <i class="bi bi-check-lg me-1"></i> Update Payment
                         </button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <?php if (!empty($order['notes'])): ?>
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Customer Notes</h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-0"><?= nl2br(Sanitizer::clean($order['notes'])) ?></p>
-                </div>
-            </div>
-        <?php endif; ?>
     </div>
 </div>

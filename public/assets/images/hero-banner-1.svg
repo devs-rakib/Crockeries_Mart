@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="600" height="250">
+  <defs>
+    <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff3838;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e02020;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="250" rx="12" fill="url(#bg1)"/>
+  <text x="40" y="100" font-family="Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">New Arrivals</text>
+  <text x="40" y="140" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.85)">Discover the latest collection</text>
+  <rect x="40" y="165" width="140" height="42" rx="8" fill="#fff"/>
+  <text x="110" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#ff3838">Shop Now</text>
+  <circle cx="500" cy="125" r="70" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="520" cy="100" r="40" fill="rgba(255,255,255,0.08)"/>
+</svg>

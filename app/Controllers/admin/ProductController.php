@@ -45,7 +45,7 @@ class ProductController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/products/index.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Product list error: " . $e->getMessage());
             Session::flash('error', 'Failed to load products');
             Response::redirect(APP_URL . '/admin');
@@ -68,7 +68,7 @@ class ProductController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/products/create.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Product create form error: " . $e->getMessage());
             Session::flash('error', 'Failed to load form');
             Response::redirect(APP_URL . '/admin/products');
@@ -152,7 +152,7 @@ class ProductController
                 Session::flashInput($_POST);
                 Response::redirect(APP_URL . '/admin/products/create');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Product store error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while creating product');
             Response::redirect(APP_URL . '/admin/products/create');
@@ -182,7 +182,7 @@ class ProductController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/products/edit.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Product edit error: " . $e->getMessage());
             Session::flash('error', 'Failed to load product');
             Response::redirect(APP_URL . '/admin/products');
@@ -278,7 +278,7 @@ class ProductController
                 Session::flashInput($_POST);
                 Response::redirect(APP_URL . "/admin/products/{$id}/edit");
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Product update error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while updating product');
             Response::redirect(APP_URL . "/admin/products/{$id}/edit");
@@ -312,7 +312,7 @@ class ProductController
             } else {
                 Session::flash('error', 'Failed to delete product');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Product delete error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while deleting product');
         }
@@ -340,7 +340,7 @@ class ProductController
             $this->productModel->update($id, ['status' => $newStatus, 'updated_at' => date('Y-m-d H:i:s')]);
 
             Session::flash('success', 'Product status updated');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Product toggle error: " . $e->getMessage());
             Session::flash('error', 'Failed to update status');
         }

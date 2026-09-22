@@ -2,6 +2,7 @@
 session_start();
 
 define('APP_ROOT', dirname(__DIR__));
+require APP_ROOT . '/vendor/autoload.php';
 require APP_ROOT . '/config/config.php';
 require APP_ROOT . '/config/autoload.php';
 
@@ -21,6 +22,21 @@ $routeMap = [
     'login'              => ['controller' => 'Auth', 'action' => 'login'],
     'register'           => ['controller' => 'Auth', 'action' => 'register'],
     'logout'             => ['controller' => 'Auth', 'action' => 'logout'],
+    'forgot-password'    => ['controller' => 'ForgotPassword', 'action' => 'showForm'],
+    'reset-password'     => ['controller' => 'ForgotPassword', 'action' => 'showResetForm'],
+    'api/auth/send-otp'  => ['controller' => 'Auth', 'action' => 'sendOtp'],
+    'api/auth/verify-otp'=> ['controller' => 'Auth', 'action' => 'verifyOtp'],
+    'api/user/profile'   => ['controller' => 'Auth', 'action' => 'me'],
+    'about'              => ['controller' => 'Pages', 'action' => 'about'],
+    'pages/return-policy'=> ['controller' => 'Pages', 'action' => 'returnPolicy'],
+    'pages/shipping-info'=> ['controller' => 'Pages', 'action' => 'shippingInfo'],
+    'pages/faq'          => ['controller' => 'Pages', 'action' => 'faq'],
+    'pages/terms'        => ['controller' => 'Pages', 'action' => 'terms'],
+    'account/profile'          => ['controller' => 'Pages', 'action' => 'myAccount'],
+    'account/update-profile'   => ['controller' => 'Pages', 'action' => 'updateProfile'],
+    'account/change-password'  => ['controller' => 'Pages', 'action' => 'changePassword'],
+    'account/upload-avatar'    => ['controller' => 'Pages', 'action' => 'uploadAvatar'],
+    'order/track'        => ['controller' => 'Pages', 'action' => 'orderTracking'],
     'shop'               => ['controller' => 'Product', 'action' => 'shop'],
     'product'            => ['controller' => 'Product', 'action' => 'detail'],
     'search'             => ['controller' => 'Product', 'action' => 'search'],
@@ -32,8 +48,16 @@ $routeMap = [
     'checkout'           => ['controller' => 'Checkout', 'action' => 'index'],
     'checkout/place'     => ['controller' => 'Checkout', 'action' => 'place'],
     'order-success'      => ['controller' => 'Checkout', 'action' => 'success'],
+    'payment/initiate'   => ['controller' => 'Payment', 'action' => 'initiate'],
+    'payment/success'    => ['controller' => 'Payment', 'action' => 'success'],
+    'payment/fail'       => ['controller' => 'Payment', 'action' => 'fail'],
+    'payment/cancel'     => ['controller' => 'Payment', 'action' => 'cancel'],
+    'payment/ipn'        => ['controller' => 'Payment', 'action' => 'ipn'],
     'my-orders'          => ['controller' => 'Order', 'action' => 'myOrders'],
     'track-order'        => ['controller' => 'Order', 'action' => 'track'],
+    'wishlist'           => ['controller' => 'Wishlist', 'action' => 'index'],
+    'support'            => ['controller' => 'Support', 'action' => 'index'],
+    'support/submit'     => ['controller' => 'Support', 'action' => 'submit'],
     'offer'              => ['controller' => 'Product', 'action' => 'shop'],
     'category'           => ['controller' => 'Product', 'action' => 'shop'],
 ];
@@ -102,6 +126,10 @@ if ($urlParts[0] === 'admin') {
     if (isset($routeMap[$routeKey])) {
         $controllerName = $routeMap[$routeKey]['controller'] . 'Controller';
         $action = $routeMap[$routeKey]['action'];
+        $params = array_slice($urlParts, 1);
+    } elseif (isset($urlParts[1]) && isset($routeMap[$urlParts[0]])) {
+        $controllerName = $routeMap[$urlParts[0]]['controller'] . 'Controller';
+        $action = $routeMap[$urlParts[0]]['action'];
         $params = array_slice($urlParts, 1);
     } else {
         $controllerName = ucfirst($urlParts[0]) . 'Controller';

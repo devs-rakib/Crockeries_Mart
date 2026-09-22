@@ -1,18 +1,8 @@
 <?php
-/**
- * My Orders - Order History Page
- * @var array $orders  Array of order objects
- */
-
 use App\Helpers\Sanitizer;
+use App\Models\Order;
 
-$statusClasses = [
-    'pending'    => 'bg-warning text-dark',
-    'processing' => 'bg-info',
-    'completed'  => 'bg-success',
-    'cancelled'  => 'bg-danger',
-    'shipped'    => 'bg-primary',
-];
+$normalFlow = Order::NORMAL_FLOW;
 ?>
 
 <style>
@@ -119,9 +109,14 @@ $statusClasses = [
                         </thead>
                         <tbody>
                             <?php foreach ($orders as $order):
-                                $statusKey = $order['order_status'] ?? $order['status'] ?? 'pending';
-                                $statusClass = $statusClasses[$statusKey] ?? 'bg-secondary';
+                                $statusKey = $order['order_status'] ?? 'pending';
+                                $statusInfo = Order::getStatusInfo($statusKey);
                                 $itemCount = $order['item_count'] ?? count($order['items'] ?? []);
+
+                                $currentFlowIndex = array_search($statusKey, $normalFlow);
+                                $isTerminal = !in_array($statusKey, $normalFlow);
+                                if ($currentFlowIndex === false) $currentFlowIndex = 0;
+                                $progressPct = $isTerminal ? 0 : (($currentFlowIndex + 1) / count($normalFlow)) * 100;
                             ?>
                                 <tr>
                                     <td>
@@ -140,10 +135,17 @@ $statusClasses = [
                                     <td class="text-end fw-bold" style="color: var(--cm-primary);">
                                         <?= Sanitizer::banglaPrice($order['total_amount'] ?? 0) ?>
                                     </td>
-                                    <td>
-                                        <span class="badge <?= $statusClass ?> rounded-pill px-3 py-2">
-                                            <?= ucfirst(Sanitizer::clean($statusKey)) ?>
-                                        </span>
+                                    <td style="min-width:180px;">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge <?= $statusInfo['color'] ?> rounded-pill px-3 py-2" style="font-size:11px;">
+                                                <?= Sanitizer::clean($statusInfo['label']) ?>
+                                            </span>
+                                        </div>
+                                        <?php if (!$isTerminal): ?>
+                                        <div class="progress" style="height:4px;border-radius:2px;">
+                                            <div class="progress-bar bg-primary" style="width:<?= $progressPct ?>%"></div>
+                                        </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-end">
                                         <a href="<?= APP_URL ?>/order/track/<?= htmlspecialchars($order['order_number']) ?>" class="btn-view">
@@ -160,8 +162,8 @@ $statusClasses = [
             <!-- Mobile Cards -->
             <div class="d-mobile">
                 <?php foreach ($orders as $order):
-                    $statusKey = $order['order_status'] ?? $order['status'] ?? 'pending';
-                    $statusClass = $statusClasses[$statusKey] ?? 'bg-secondary';
+                    $statusKey = $order['order_status'] ?? 'pending';
+                    $statusInfo = Order::getStatusInfo($statusKey);
                     $itemCount = $order['item_count'] ?? count($order['items'] ?? []);
                 ?>
                     <div class="order-card">
@@ -170,8 +172,8 @@ $statusClasses = [
                                 <div class="order-num">#<?= Sanitizer::clean($order['order_number']) ?></div>
                                 <small class="order-date"><?= date('d M Y, h:i A', strtotime($order['created_at'])) ?></small>
                             </div>
-                            <span class="badge <?= $statusClass ?> rounded-pill px-3 py-2">
-                                <?= ucfirst(Sanitizer::clean($statusKey)) ?>
+                            <span class="badge <?= $statusInfo['color'] ?> rounded-pill px-3 py-2">
+                                <?= Sanitizer::clean($statusInfo['label']) ?>
                             </span>
                         </div>
                         <div class="card-row">

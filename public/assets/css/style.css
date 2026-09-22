@@ -71,6 +71,11 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1.3;
 }
 
+.page-hero h1,
+.page-hero h2 {
+    color: #fff;
+}
+
 .section-title {
     text-align: center;
     margin-bottom: 40px;
@@ -640,6 +645,10 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--primary);
     width: 50px;
 }
+.carousel-indicators [data-bs-target] {
+    border-top: 3px solid var(--primary) !important;
+    border-bottom: 3px solid var(--primary) !important;
+}
 
 /* ---------- Banner Section ---------- */
 .banner-section {
@@ -892,14 +901,22 @@ h1, h2, h3, h4, h5, h6 {
 
 .product-card .product-btn-group {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    align-items: stretch;
 }
 
 .product-card .product-btn-group .btn {
     flex: 1;
     font-size: 13px;
-    padding: 8px 12px;
+    padding: 10px 14px;
     font-weight: 600;
+    border-radius: 8px;
+    letter-spacing: 0.3px;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .product-card .product-btn-group .btn-order {
@@ -911,6 +928,8 @@ h1, h2, h3, h4, h5, h6 {
 .product-card .product-btn-group .btn-order:hover {
     background-color: var(--primary-hover);
     border-color: var(--primary-hover);
+    box-shadow: 0 4px 12px rgba(255, 56, 56, 0.3);
+    transform: translateY(-1px);
 }
 
 .product-card .product-btn-group .btn-add-cart {
@@ -922,6 +941,8 @@ h1, h2, h3, h4, h5, h6 {
 .product-card .product-btn-group .btn-add-cart:hover {
     border-color: var(--primary);
     color: var(--primary);
+    box-shadow: 0 4px 12px rgba(255, 56, 56, 0.15);
+    transform: translateY(-1px);
 }
 
 /* ---------- Category Card ---------- */
@@ -1249,12 +1270,13 @@ h1, h2, h3, h4, h5, h6 {
 .payment-icon {
     height: 28px;
     width: auto;
-    opacity: 0.7;
+    /* opacity: 0.7; */
     transition: var(--transition);
 }
 
 .payment-icon:hover {
-    opacity: 1;
+    box-shadow: 0 4px 16px rgba(255, 56, 56, 0.1);
+    transform: translateY(-3px);
 }
 
 /* ---------- Back to Top ---------- */
@@ -1763,9 +1785,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .breadcrumb-item + .breadcrumb-item::before {
-    content: '\f105';
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
+    content: '\e908';
+    font-family: 'bootstrap-icons';
+    font-weight: 400;
     color: var(--text-muted);
     margin-right: 8px;
 }
@@ -2505,6 +2527,69 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
+   Trust Badges Strip
+   ========================================================================== */
+.cm-trust-strip {
+    background: var(--white);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 18px 0;
+}
+
+.cm-trust-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.cm-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    border-right: 1px solid var(--border-color);
+}
+
+.cm-trust-item:last-child {
+    border-right: none;
+}
+
+.cm-trust-item i {
+    font-size: 28px;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.cm-trust-item strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 2px;
+}
+
+.cm-trust-item span {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+@media (max-width: 767px) {
+    .cm-trust-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .cm-trust-item {
+        border-right: none;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .cm-trust-item:last-child {
+        border-bottom: none;
+    }
+}
+
+/* ==========================================================================
    Responsive Breakpoints
    ========================================================================== */
 
@@ -2772,3 +2857,51 @@ h1, h2, h3, h4, h5, h6 {
         gap: 24px;
     }
 }
+
+/* ── App Toast Notifications ── */
+.app-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 8px 30px rgba(0,0,0,.15);
+    transform: translateX(calc(100% + 30px));
+    opacity: 0;
+    transition: transform .35s ease, opacity .35s ease;
+    min-width: 260px;
+    max-width: 400px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+.app-toast--visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+.app-toast__icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+.app-toast--success .app-toast__icon { color: #28a745; }
+.app-toast--error .app-toast__icon { color: #dc3545; }
+.app-toast--info .app-toast__icon { color: #17a2b8; }
+.app-toast--success { border-left: 4px solid #28a745; }
+.app-toast--error { border-left: 4px solid #dc3545; }
+.app-toast--info { border-left: 4px solid #17a2b8; }
+.app-toast__msg { flex: 1; }
+.app-toast__close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    padding: 0 0 0 8px;
+    line-height: 1;
+}
+.app-toast__close:hover { color: #333; }

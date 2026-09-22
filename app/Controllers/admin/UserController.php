@@ -41,7 +41,7 @@ class UserController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/users/index.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("User list error: " . $e->getMessage());
             Session::flash('error', 'Failed to load users');
             Response::redirect(APP_URL . '/admin');
@@ -72,7 +72,7 @@ class UserController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/users/view.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("User view error: " . $e->getMessage());
             Session::flash('error', 'Failed to load user details');
             Response::redirect(APP_URL . '/admin/users');
@@ -104,7 +104,7 @@ class UserController
             $this->userModel->toggleStatus($id);
             $newStatus = $user['status'] == 1 ? 'inactive' : 'active';
             Session::flash('success', "User status changed to {$newStatus}");
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("User toggle error: " . $e->getMessage());
             Session::flash('error', 'Failed to update user status');
         }
@@ -141,7 +141,7 @@ class UserController
             } else {
                 Session::flash('error', 'Failed to delete user');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("User delete error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while deleting user');
         }

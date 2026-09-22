@@ -5,7 +5,7 @@ use App\Helpers\Sanitizer;
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Edit Brand</h4>
     <a href="<?= ADMIN_URL ?>brands" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back to Brands
+        <i class="bi bi-arrow-left me-1"></i> Back to Brands
     </a>
 </div>
 
@@ -59,6 +59,7 @@ use App\Helpers\Sanitizer;
                 </div>
                 <div class="card-body">
                     <div class="form-check form-switch">
+                        <input type="hidden" name="status" value="0">
                         <input class="form-check-input" type="checkbox" id="status" name="status" value="1" <?= old('status', $brand['status']) ? 'checked' : '' ?>>
                         <label class="form-check-label" for="status">Active Status</label>
                     </div>
@@ -67,7 +68,7 @@ use App\Helpers\Sanitizer;
 
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-save me-1"></i> Update Brand
+                    <i class="bi bi-check-lg me-1"></i> Update Brand
                 </button>
             </div>
         </div>

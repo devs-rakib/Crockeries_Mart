@@ -36,7 +36,7 @@ class BrandController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/brands/index.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Brand list error: " . $e->getMessage());
             Session::flash('error', 'Failed to load brands');
             Response::redirect(APP_URL . '/admin');
@@ -54,7 +54,7 @@ class BrandController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/brands/create.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Brand create form error: " . $e->getMessage());
             Session::flash('error', 'Failed to load form');
             Response::redirect(APP_URL . '/admin/brands');
@@ -97,7 +97,6 @@ class BrandController
                 'slug' => $slug,
                 'logo' => $logo,
                 'status' => $status,
-                'created_at' => date('Y-m-d H:i:s'),
             ];
 
             $brandId = $this->brandModel->create($data);
@@ -111,7 +110,7 @@ class BrandController
                 Session::flashInput($_POST);
                 Response::redirect(APP_URL . '/admin/brands/create');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Brand store error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while creating brand');
             Session::flashInput($_POST);
@@ -137,7 +136,7 @@ class BrandController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/brands/edit.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Brand edit error: " . $e->getMessage());
             Session::flash('error', 'Failed to load brand');
             Response::redirect(APP_URL . '/admin/brands');
@@ -167,7 +166,7 @@ class BrandController
             if (empty($name)) {
                 Session::flash('error', 'Brand name is required');
                 Session::flashInput($_POST);
-                Response::redirect(APP_URL . "/admin/brands/{$id}/edit");
+                Response::redirect(APP_URL . "/admin/brands/edit/{$id}");
                 return;
             }
 
@@ -182,7 +181,7 @@ class BrandController
                 } else {
                     Session::flash('error', 'Failed to upload logo. Allowed types: JPEG, PNG, GIF, WebP');
                     Session::flashInput($_POST);
-                    Response::redirect(APP_URL . "/admin/brands/{$id}/edit");
+                    Response::redirect(APP_URL . "/admin/brands/edit/{$id}");
                     return;
                 }
             }
@@ -192,25 +191,18 @@ class BrandController
                 'slug' => $slug,
                 'logo' => $logo,
                 'status' => $status,
-                'updated_at' => date('Y-m-d H:i:s'),
             ];
 
-            $result = $this->brandModel->update($id, $data);
+            $this->brandModel->update($id, $data);
 
-            if ($result) {
-                Session::flash('success', 'Brand updated successfully');
-                Session::clearOldInput();
-                Response::redirect(APP_URL . '/admin/brands');
-            } else {
-                Session::flash('error', 'Failed to update brand');
-                Session::flashInput($_POST);
-                Response::redirect(APP_URL . "/admin/brands/{$id}/edit");
-            }
-        } catch (\Exception $e) {
+            Session::flash('success', 'Brand updated successfully');
+            Session::clearOldInput();
+            Response::redirect(APP_URL . '/admin/brands');
+        } catch (\Throwable $e) {
             error_log("Brand update error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while updating brand');
             Session::flashInput($_POST);
-            Response::redirect(APP_URL . "/admin/brands/{$id}/edit");
+            Response::redirect(APP_URL . "/admin/brands/edit/{$id}");
         }
     }
 
@@ -240,7 +232,7 @@ class BrandController
             } else {
                 Session::flash('error', 'Failed to delete brand');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Brand delete error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while deleting brand');
         }
@@ -265,10 +257,10 @@ class BrandController
             }
 
             $newStatus = $brand['status'] == 1 ? 0 : 1;
-            $this->brandModel->update($id, ['status' => $newStatus, 'updated_at' => date('Y-m-d H:i:s')]);
+            $this->brandModel->update($id, ['status' => $newStatus]);
 
             Session::flash('success', 'Brand status updated');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Brand toggle error: " . $e->getMessage());
             Session::flash('error', 'Failed to update status');
         }

@@ -8,7 +8,7 @@ use App\Helpers\CSRF;
         <small class="text-muted">Joined <?= date('d M Y', strtotime($user['created_at'])) ?></small>
     </div>
     <a href="<?= ADMIN_URL ?>users" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back to Users
+        <i class="bi bi-arrow-left me-1"></i> Back to Users
     </a>
 </div>
 
@@ -101,7 +101,7 @@ use App\Helpers\CSRF;
                                         </td>
                                         <td class="text-center">
                                             <a href="<?= ADMIN_URL ?>orders/view/<?= (int)$order['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="bi bi-eye"></i>
                                             </a>
                                         </td>
                                     </tr>
@@ -124,18 +124,18 @@ use App\Helpers\CSRF;
                     <form method="POST" action="<?= ADMIN_URL ?>users/toggleStatus/<?= (int)$user['id'] ?>">
                         <?= CSRF::field() ?>
                         <button type="submit" class="btn btn-outline-warning w-100">
-                            <i class="fas fa-toggle-on me-1"></i> Toggle Status
+                            <i class="bi bi-toggle-on me-1"></i> Toggle Status
                         </button>
                     </form>
                     <form method="POST" action="<?= ADMIN_URL ?>users/destroy/<?= (int)$user['id'] ?>" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
                         <?= CSRF::field() ?>
                         <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="fas fa-trash me-1"></i> Delete User
+                            <i class="bi bi-trash me-1"></i> Delete User
                         </button>
                     </form>
                 <?php else: ?>
                     <div class="alert alert-info mb-0">
-                        <small><i class="fas fa-info-circle me-1"></i> Admin users cannot be deleted or deactivated from here.</small>
+                        <small><i class="bi bi-info-circle me-1"></i> Admin users cannot be deleted or deactivated from here.</small>
                     </div>
                 <?php endif; ?>
             </div>

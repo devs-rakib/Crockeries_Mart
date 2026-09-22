@@ -181,6 +181,40 @@ class Product
         );
     }
 
+    public function getTodaysDeals(int $limit = 6): array
+    {
+        $deals = $this->db->fetchAll(
+            "SELECT p.*, c.name as category_name,
+             ROUND(((p.price - p.discount_price) / p.price) * 100) as discount_percent
+             FROM {$this->table} p
+             LEFT JOIN categories c ON p.category_id = c.id
+             WHERE p.status = 1 AND (p.is_offer = 1 OR (p.discount_price IS NOT NULL AND p.discount_price > 0))
+             ORDER BY p.is_offer DESC, COALESCE(discount_percent, 0) DESC, p.views_count DESC
+             LIMIT ?",
+            [$limit]
+        );
+
+        if (count($deals) < $limit) {
+            $existingIds = !empty($deals) ? array_column($deals, 'id') : [0];
+            $placeholders = implode(',', array_fill(0, count($existingIds), '?'));
+            $needed = $limit - count($deals);
+            $params = array_merge($existingIds, [$needed]);
+            $extra = $this->db->fetchAll(
+                "SELECT p.*, c.name as category_name,
+                 0 as discount_percent
+                 FROM {$this->table} p
+                 LEFT JOIN categories c ON p.category_id = c.id
+                 WHERE p.status = 1 AND p.id NOT IN ({$placeholders})
+                 ORDER BY p.views_count DESC, p.created_at DESC
+                 LIMIT ?",
+                $params
+            );
+            $deals = array_merge($deals, $extra);
+        }
+
+        return $deals;
+    }
+
     public function getByCategory(int $categoryId, int $limit = 8): array
     {
         return $this->db->fetchAll(
@@ -260,5 +294,19 @@ class Product
     {
         $result = $this->db->fetch("SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE payment_status = 'paid'");
         return (float) ($result['total'] ?? 0);
+    }
+
+    public function getOfferProducts(int $limit = 12): array
+    {
+        return $this->db->fetchAll(
+            "SELECT p.*, c.name as category_name,
+             ROUND(((p.price - p.discount_price) / p.price) * 100) as discount_percent
+             FROM {$this->table} p
+             LEFT JOIN categories c ON p.category_id = c.id
+             WHERE p.is_offer = 1 AND p.status = 1
+             ORDER BY discount_percent DESC, p.views_count DESC
+             LIMIT ?",
+            [$limit]
+        );
     }
 }

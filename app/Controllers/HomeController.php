@@ -40,12 +40,12 @@ class HomeController
         $data = [
             'pageTitle'         => 'Home',
             'heroSliders'       => $this->bannerModel->getActive('hero_slider'),
-            'middleBanners'     => $this->bannerModel->getActive('middle_banner'),
-            'sidebarBanners'    => $this->bannerModel->getActive('sidebar_banner'),
             'categories'        => $categories,
             'sidebarCategories' => $this->categoryModel->getSidebarTree(),
             'categoryProducts'  => $categoryProducts,
             'featuredProducts'  => $this->productModel->getFeatured(8),
+            'offerProducts'     => $this->productModel->getOfferProducts(12),
+            'todaysDeals'       => $this->productModel->getTodaysDeals(6),
             'brands'            => $this->brandModel->getAll(),
         ];
 

@@ -5,7 +5,7 @@ use App\Helpers\Sanitizer;
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Add Banner</h4>
     <a href="<?= ADMIN_URL ?>banners" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back to Banners
+        <i class="bi bi-arrow-left me-1"></i> Back to Banners
     </a>
 </div>
 
@@ -88,7 +88,7 @@ use App\Helpers\Sanitizer;
 
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-save me-1"></i> Create Banner
+                    <i class="bi bi-check-lg me-1"></i> Create Banner
                 </button>
             </div>
         </div>

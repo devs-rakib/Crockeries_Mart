@@ -5,7 +5,7 @@ use App\Helpers\Sanitizer;
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Products</h4>
     <a href="<?= ADMIN_URL ?>products/create" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> Add Product
+        <i class="bi bi-plus-lg me-1"></i> Add Product
     </a>
 </div>
 
@@ -17,11 +17,11 @@ use App\Helpers\Sanitizer;
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-outline-primary me-2">
-                    <i class="fas fa-search me-1"></i> Search
+                    <i class="bi bi-search me-1"></i> Search
                 </button>
                 <?php if (!empty($search)): ?>
                     <a href="<?= ADMIN_URL ?>products" class="btn btn-outline-secondary">
-                        <i class="fas fa-times me-1"></i> Clear
+                        <i class="bi bi-x-lg me-1"></i> Clear
                     </a>
                 <?php endif; ?>
             </div>
@@ -33,7 +33,7 @@ use App\Helpers\Sanitizer;
     <div class="card-body p-0">
         <?php if (empty($products)): ?>
             <div class="text-center py-5">
-                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <i class="bi bi-box fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">No products found</h5>
                 <p class="text-muted">Start by adding your first product.</p>
                 <a href="<?= ADMIN_URL ?>products/create" class="btn btn-primary">Add Product</a>
@@ -61,7 +61,7 @@ use App\Helpers\Sanitizer;
                                         <img src="<?= Sanitizer::image($product['main_image']) ?>" alt="<?= Sanitizer::clean($product['name']) ?>" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
                                     <?php else: ?>
                                         <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                            <i class="fas fa-image text-muted"></i>
+                                            <i class="bi bi-image text-muted"></i>
                                         </div>
                                     <?php endif; ?>
                                 </td>
@@ -97,12 +97,12 @@ use App\Helpers\Sanitizer;
                                 </td>
                                 <td class="text-center">
                                     <a href="<?= ADMIN_URL ?>products/edit/<?= (int)$product['id'] ?>" class="btn btn-sm btn-outline-primary me-1" title="Edit">
-                                        <i class="fas fa-edit"></i>
+                                        <i class="bi bi-pencil"></i>
                                     </a>
                                     <form method="POST" action="<?= ADMIN_URL ?>products/destroy/<?= (int)$product['id'] ?>" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this product?');">
                                         <?= CSRF::field() ?>
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 </td>

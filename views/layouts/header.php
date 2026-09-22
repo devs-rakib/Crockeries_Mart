@@ -23,7 +23,9 @@ if (Auth::check()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="base-url" content="<?= APP_URL ?>">
     <title><?= htmlspecialchars($pageTitle ?? SITE_NAME) ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= APP_URL ?>/assets/images/favicon.svg">
     <?= CSRF::meta() ?>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -224,6 +226,11 @@ if (Auth::check()) {
             50% { transform: scale(1.1); }
         }
 
+        <?php if (($pageTitle ?? '') === 'Home'): ?>
+        .cm-header .cm-header-nav { display: none !important; }
+        .cm-header .cm-search { margin: 0 auto; max-width: 580px; width: 100%; }
+        <?php endif; ?>
+
         /* ── Category Quick Icons ── */
         .cm-cat-bar {
             background: var(--cm-white);
@@ -264,24 +271,33 @@ if (Auth::check()) {
 
         /* ── Offcanvas Cart ── */
         #cartDrawer .offcanvas-header {
-            background: var(--cm-dark);
+            background: linear-gradient(135deg, var(--cm-dark) 0%, var(--cm-dark-light) 100%);
             color: #fff;
             padding: 16px 20px;
         }
+        #cartDrawer .offcanvas-header .offcanvas-title { color: #fff; }
         #cartDrawer .offcanvas-body { padding: 0; display: flex; flex-direction: column; }
         #cartDrawer .btn-close { filter: invert(1); }
-        #cartItems { flex: 1; overflow-y: auto; padding: 16px 20px; }
+        #cartItems { flex: 1; overflow-y: auto; padding: 12px 16px; }
         .cm-cart-item {
             display: flex;
             gap: 12px;
-            padding: 14px 0;
+            padding: 14px 8px;
             border-bottom: 1px solid var(--cm-gray-200);
+            border-radius: 8px;
+            transition: background var(--cm-transition);
+            animation: cartItemIn 0.3s ease;
+        }
+        .cm-cart-item:hover { background: var(--cm-gray-100); }
+        @keyframes cartItemIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         .cm-cart-item img {
             width: 64px;
             height: 64px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 8px;
             flex-shrink: 0;
         }
         .cm-cart-item .item-info { flex: 1; }
@@ -310,16 +326,17 @@ if (Auth::check()) {
             margin-top: 6px;
         }
         .cm-cart-item .qty-control button {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border: 1px solid var(--cm-gray-200);
-            border-radius: 4px;
+            border-radius: 50%;
             background: var(--cm-gray-100);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
             transition: all var(--cm-transition);
         }
         .cm-cart-item .qty-control button:hover { border-color: var(--cm-primary); color: var(--cm-primary); }
@@ -356,6 +373,22 @@ if (Auth::check()) {
             transition: background var(--cm-transition);
         }
         #cartDrawer .cart-footer .btn-checkout:hover { background: var(--cm-primary-dark); }
+        .cm-continue-shopping {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cm-gray-500);
+            border-top: 1px solid var(--cm-gray-200);
+            transition: color var(--cm-transition);
+        }
+        .cm-continue-shopping:hover { color: var(--cm-primary); }
+        .cm-shipping-bar { margin-bottom: 12px; }
+        .cm-shipping-bar .progress { height: 6px; border-radius: 3px; background: var(--cm-gray-200); }
+        .cm-shipping-bar .progress-bar { background: var(--cm-primary); border-radius: 3px; transition: width 0.5s ease; }
+        .cm-shipping-bar .shipping-text { font-size: 12px; color: var(--cm-gray-500); margin-top: 6px; }
+        .cm-shipping-bar .shipping-text strong { color: var(--cm-primary); }
         .cm-cart-empty {
             text-align: center;
             padding: 40px 20px;
@@ -389,7 +422,12 @@ if (Auth::check()) {
                 <span>Customer Support</span>
                 <span>|</span>
                 <?php if (Auth::check()): ?>
-                    <span>Welcome, <strong><?= Sanitizer::clean(Auth::name()) ?></strong></span>
+                    <a href="<?= APP_URL ?>/account/profile" id="headerUserName" style="text-decoration:none;color:inherit;">Welcome, <strong><?= Sanitizer::clean(Auth::name()) ?></strong></a>
+                    <?php if (Auth::admin()): ?>
+                        <span>|</span>
+                        <a href="<?= APP_URL ?>/admin/dashboard"><i class="bi bi-speedometer2 me-1"></i>Admin Panel</a>
+                    <?php endif; ?>
+                    <span>|</span>
                     <a href="<?= APP_URL ?>/logout">Logout</a>
                 <?php else: ?>
                     <a href="<?= APP_URL ?>/login">Login</a>
@@ -408,8 +446,8 @@ if (Auth::check()) {
 
             <!-- Logo -->
             <a href="<?= APP_URL ?>" class="cm-logo text-decoration-none d-flex align-items-center gap-2 flex-shrink-0">
-                <i class="bi bi-box-seam" style="font-size:32px;color:var(--cm-primary)"></i>
-                <span><em>Crokerses</em>Mart</span>
+                <img src="<?= APP_URL ?>/assets/images/logo-icon.svg" alt="" style="width:36px;height:36px;color:var(--cm-primary)">
+                <span><em>Crokerses </em>Mart</span>
             </a>
 
             <!-- Nav Links (desktop) -->
@@ -443,15 +481,24 @@ if (Auth::check()) {
             <!-- Header Icons -->
             <div class="cm-header-icons">
                 <?php if (Auth::check()): ?>
-                    <a href="<?= APP_URL ?>/wishlist" class="cm-icon-btn" title="Wishlist">
-                        <i class="bi bi-heart"></i>
-                        <?php if ($wishlistCount > 0): ?>
-                            <span class="badge"><?= $wishlistCount ?></span>
+                    <?php
+                    $pendingOrderCount = 0;
+                    try {
+                        $orderModel = new App\Models\Order();
+                        $userOrders = $orderModel->getByUserId(Auth::id(), 100);
+                        $pendingOrderCount = count(array_filter($userOrders, fn($o) => in_array($o['order_status'] ?? '', ['pending', 'processing'])));
+                    } catch (\Throwable $e) {}
+                    ?>
+                    <a href="<?= APP_URL ?>/my-orders" class="cm-icon-btn" title="My Orders">
+                        <i class="bi bi-bag-check"></i>
+                        <?php if ($pendingOrderCount > 0): ?>
+                            <span class="badge"><?= $pendingOrderCount ?></span>
                         <?php endif; ?>
                     </a>
                 <?php endif; ?>
-                <a href="<?= APP_URL ?>/compare" class="cm-icon-btn d-none d-md-flex" title="Compare">
-                    <i class="bi bi-arrow-left-right"></i>
+                <a href="<?= APP_URL ?><?= Auth::check() ? '/wishlist' : '/login' ?>" class="cm-icon-btn" title="Wishlist">
+                    <i class="bi bi-heart"></i>
+                    <span class="badge" id="wishlistCountBadge" style="<?= $wishlistCount > 0 ? '' : 'display:none;' ?>"><?= $wishlistCount ?></span>
                 </a>
                 <button type="button" class="cm-icon-btn" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" title="Cart">
                     <i class="bi bi-bag"></i>
@@ -515,11 +562,31 @@ if (Auth::check()) {
             <?php endif; ?>
         </div>
         <div class="cart-footer" id="cartFooter" <?= empty($cart) ? 'style="display:none;"' : '' ?>>
+            <div class="cm-shipping-bar" id="shippingBar">
+                <?php
+                $freeShippingMin = 3000;
+                $shippingProgress = min(($cartTotal / $freeShippingMin) * 100, 100);
+                $remaining = max(0, $freeShippingMin - $cartTotal);
+                ?>
+                <div class="progress">
+                    <div class="progress-bar" style="width: <?= $shippingProgress ?>%"></div>
+                </div>
+                <div class="shipping-text" id="shippingText">
+                    <?php if ($remaining > 0): ?>
+                        Add <strong><?= Sanitizer::banglaPrice($remaining) ?></strong> more for FREE shipping!
+                    <?php else: ?>
+                        <strong>You've unlocked FREE shipping!</strong>
+                    <?php endif; ?>
+                </div>
+            </div>
             <div class="subtotal">
                 <span>Subtotal:</span>
                 <span id="cartSubtotal"><?= Sanitizer::banglaPrice($cartTotal) ?></span>
             </div>
             <a href="<?= APP_URL ?>/checkout" class="btn-checkout">Proceed to Checkout</a>
+            <a href="<?= APP_URL ?>/shop" class="cm-continue-shopping">
+                <i class="bi bi-arrow-left me-1"></i> Continue Shopping
+            </a>
         </div>
     </div>
 </div>
@@ -544,17 +611,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
             searchTimeout = setTimeout(function () {
-                fetch('<?= APP_URL ?>/ajax_handler.php?action=search&q=' + encodeURIComponent(query))
+                fetch('<?= APP_URL ?>/ajax_handler.php?action=live_search&query=' + encodeURIComponent(query))
                     .then(function (r) { return r.json(); })
                     .then(function (data) {
-                        if (data.success && data.results && data.results.length > 0) {
-                            let html = '';
-                            data.results.forEach(function (item) {
-                                html += '<a href="<?= APP_URL ?>/product/' + item.slug + '" class="search-item">' +
-                                    '<img src="<?= APP_URL ?>/uploads/' + item.main_image + '" alt="">' +
+                        var results = data.results || data.products || [];
+                        if (results.length > 0) {
+                            var html = '';
+                            results.forEach(function (item) {
+                                var price = parseFloat(item.discount_price || item.price).toLocaleString();
+                                html += '<a href="' + (item.url || '<?= APP_URL ?>/product/' + item.slug) + '" class="search-item">' +
+                                    '<img src="' + (item.main_image || item.image || '<?= APP_URL ?>/assets/images/placeholder.svg') + '" alt="">' +
                                     '<div>' +
                                         '<div class="item-name">' + item.name + '</div>' +
-                                        '<div class="item-price">৳' + parseFloat(item.discount_price || item.price).toLocaleString() + '</div>' +
+                                        '<div class="item-price">৳' + price + '</div>' +
                                     '</div>' +
                                 '</a>';
                             });
@@ -588,127 +657,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const cartDrawer = document.getElementById('cartDrawer');
     if (cartDrawer) {
         cartDrawer.addEventListener('show.bs.offcanvas', function () {
-            refreshCartDrawer();
+            if (typeof Cart !== 'undefined') Cart.loadCart();
         });
     }
 
-    function refreshCartDrawer() {
-        fetch('<?= APP_URL ?>/ajax_handler.php?action=get_cart', {
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            if (!data.success) return;
-            const items    = document.getElementById('cartItems');
-            const footer   = document.getElementById('cartFooter');
-            const countEl  = document.getElementById('cartCountText');
-            const badge    = document.getElementById('cartCountBadge');
-            const subtotal = document.getElementById('cartSubtotal');
-
-            if (countEl) countEl.textContent = data.count;
-            if (badge)   badge.textContent   = data.count;
-            if (subtotal) subtotal.textContent = '৳' + parseFloat(data.total).toLocaleString();
-
-            if (data.items.length === 0) {
-                items.innerHTML = '<div class="cm-cart-empty">' +
-                    '<i class="bi bi-bag-x"></i>' +
-                    '<p>Your cart is empty</p>' +
-                    '<a href="<?= APP_URL ?>/shop" class="btn btn-sm btn-outline-primary" style="border-color:var(--cm-primary);color:var(--cm-primary);border-radius:20px;">Start Shopping</a>' +
-                '</div>';
-                if (footer) footer.style.display = 'none';
-            } else {
-                let html = '';
-                data.items.forEach(function (item) {
-                    const price = item.discount_price || item.price;
-                    html += '<div class="cm-cart-item" data-key="' + item.key + '">' +
-                        '<img src="<?= APP_URL ?>/uploads/' + item.image + '" alt="">' +
-                        '<div class="item-info flex-grow-1">' +
-                            '<div class="d-flex justify-content-between">' +
-                                '<div class="item-name">' + item.name + '</div>' +
-                                '<button class="item-remove" data-key="' + item.key + '" title="Remove"><i class="bi bi-x-lg"></i></button>' +
-                            '</div>' +
-                            (item.variant_name ? '<small class="text-muted">' + item.variant_name + '</small>' : '') +
-                            '<div class="item-price">৳' + parseFloat(price).toLocaleString() + '</div>' +
-                            '<div class="qty-control">' +
-                                '<button class="cart-qty-btn" data-key="' + item.key + '" data-action="decrease">-</button>' +
-                                '<span>' + item.quantity + '</span>' +
-                                '<button class="cart-qty-btn" data-key="' + item.key + '" data-action="increase">+</button>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>';
-                });
-                items.innerHTML = html;
-                if (footer) footer.style.display = 'block';
-                bindCartControls();
-            }
-        });
+    /* ── Shipping Progress Bar ── */
+    window.updateShippingBar = function (total) {
+        const freeMin = 3000;
+        const pct = Math.min((total / freeMin) * 100, 100);
+        const remaining = Math.max(0, freeMin - total);
+        const bar = document.querySelector('#shippingBar .progress-bar');
+        const text = document.getElementById('shippingText');
+        if (bar) bar.style.width = pct + '%';
+        if (text) {
+            text.innerHTML = remaining > 0
+                ? 'Add <strong>৳' + remaining.toLocaleString() + '</strong> more for FREE shipping!'
+                : '<strong>You\'ve unlocked FREE shipping!</strong>';
+        }
     }
-
-    /* ── Cart Quantity & Remove ── */
-    function bindCartControls() {
-        document.querySelectorAll('.cart-qty-btn').forEach(function (btn) {
-            btn.onclick = function () {
-                const key    = this.getAttribute('data-key');
-                const action = this.getAttribute('data-action');
-                let current  = parseInt(this.closest('.qty-control').querySelector('span').textContent);
-                let newQty   = action === 'increase' ? current + 1 : Math.max(1, current - 1);
-
-                const formData = new FormData();
-                formData.append('action', 'update_cart');
-                formData.append('key', key);
-                formData.append('quantity', newQty);
-
-                fetch('<?= APP_URL ?>/ajax_handler.php', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (data.success) {
-                        refreshCartDrawer();
-                        if (typeof updateHeaderCartBadge === 'function') {
-                            updateHeaderCartBadge(data.cart_count);
-                        }
-                    }
-                });
-            };
-        });
-
-        document.querySelectorAll('.item-remove').forEach(function (btn) {
-            btn.onclick = function () {
-                const key = this.getAttribute('data-key');
-                const formData = new FormData();
-                formData.append('action', 'remove_cart');
-                formData.append('key', key);
-
-                fetch('<?= APP_URL ?>/ajax_handler.php', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (data.success) {
-                        refreshCartDrawer();
-                        if (typeof updateHeaderCartBadge === 'function') {
-                            updateHeaderCartBadge(data.cart_count);
-                        }
-                    }
-                });
-            };
-        });
-    }
-    bindCartControls();
 
     /* ── Global badge updater (used by product pages) ── */
     window.updateHeaderCartBadge = function (count) {
@@ -738,5 +704,69 @@ document.addEventListener('DOMContentLoaded', function () {
 
         lastScroll = currentScroll;
     }, { passive: true });
+
+    /* ── Fetch user profile for navbar ── */
+    var headerUserName = document.getElementById('headerUserName');
+    if (headerUserName) {
+        fetch('<?= APP_URL ?>/api/user/profile', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success && data.user) {
+                headerUserName.querySelector('strong').textContent = data.user.name;
+            }
+        })
+        .catch(function () {});
+    }
+
+    /* ── Wishlist toggle on product cards ── */
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.wishlist-btn');
+        if (!btn) return;
+        e.preventDefault();
+
+        var productId = btn.dataset.productId;
+        if (!productId) return;
+
+        var icon = btn.querySelector('i');
+        var formData = new FormData();
+        formData.append('action', 'toggle_wishlist');
+        formData.append('product_id', productId);
+
+        fetch('<?= APP_URL ?>/ajax_handler.php', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                if (data.added) {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                    btn.style.color = '#ff3838';
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                    btn.style.color = '';
+                }
+                var wBadge = document.getElementById('wishlistCountBadge');
+                if (wBadge) {
+                    var count = data.count || 0;
+                    wBadge.textContent = count;
+                    wBadge.style.display = count > 0 ? '' : 'none';
+                }
+            } else {
+                alert(data.message || 'Please login first');
+            }
+        })
+        .catch(function () {});
+    });
 });
 </script>

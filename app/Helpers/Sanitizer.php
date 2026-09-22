@@ -3,9 +3,10 @@ namespace App\Helpers;
 
 class Sanitizer
 {
-    public static function clean(string $input): string
+    public static function clean(mixed $input): string
     {
-        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+        if ($input === null || $input === '') return '';
+        return htmlspecialchars(trim((string) $input), ENT_QUOTES, 'UTF-8');
     }
 
     public static function cleanArray(array $input): array
@@ -38,7 +39,7 @@ class Sanitizer
         return '৳' . number_format($price, 0, '.', ',');
     }
 
-    public static function image(string $path): string
+    public static function image(mixed $path): string
     {
         if (empty($path) || !file_exists(UPLOAD_PATH . '/' . $path)) {
             return APP_URL . '/assets/images/placeholder.svg';
@@ -46,14 +47,16 @@ class Sanitizer
         return APP_URL . '/uploads/' . $path;
     }
 
-    public static function truncate(string $text, int $length = 100): string
+    public static function truncate(mixed $text, int $length = 100): string
     {
+        $text = (string) ($text ?? '');
         if (strlen($text) <= $length) return $text;
         return substr($text, 0, $length) . '...';
     }
 
-    public static function timeAgo(string $datetime): string
+    public static function timeAgo(mixed $datetime): string
     {
+        $datetime = (string) ($datetime ?? '');
         $now = time();
         $time = strtotime($datetime);
         $diff = $now - $time;

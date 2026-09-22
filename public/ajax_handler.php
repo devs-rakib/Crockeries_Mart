@@ -2,6 +2,7 @@
 session_start();
 
 define('APP_ROOT', dirname(__DIR__));
+require APP_ROOT . '/vendor/autoload.php';
 require APP_ROOT . '/config/config.php';
 require APP_ROOT . '/config/autoload.php';
 require APP_ROOT . '/config/database.php';
@@ -62,6 +63,31 @@ switch ($action) {
         require APP_ROOT . '/app/Controllers/ProductController.php';
         $product = new App\Controllers\ProductController();
         $product->filter();
+        break;
+
+    case 'submit_review':
+        if (!isset($_SESSION['user_id'])) {
+            Response::json(['success' => false, 'message' => 'Please login first'], 401);
+        }
+        require APP_ROOT . '/app/Models/Review.php';
+        $reviewModel = new App\Models\Review();
+        $productId = (int) ($_POST['product_id'] ?? 0);
+        $rating = max(1, min(5, (int) ($_POST['rating'] ?? 0)));
+        $title = trim($_POST['title'] ?? '');
+        $comment = trim($_POST['comment'] ?? '');
+        if (!$productId || $rating < 1 || empty($title)) {
+            Response::json(['success' => false, 'message' => 'Please fill all required fields']);
+        }
+        $reviewModel->create([
+            'user_id'    => $_SESSION['user_id'],
+            'product_id' => $productId,
+            'rating'     => $rating,
+            'title'      => $title,
+            'comment'    => $comment,
+            'status'     => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+        Response::json(['success' => true, 'message' => 'Review submitted successfully!']);
         break;
 
     default:

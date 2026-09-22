@@ -32,7 +32,7 @@ class CategoryController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/categories/index.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Category list error: " . $e->getMessage());
             Session::flash('error', 'Failed to load categories');
             Response::redirect(APP_URL . '/admin');
@@ -47,13 +47,14 @@ class CategoryController
             $data = [
                 'pageTitle' => 'Add Category',
                 'parentCategories' => $parentCategories,
+                'allCategories' => $parentCategories,
                 'category' => null,
             ];
 
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/categories/create.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Category create form error: " . $e->getMessage());
             Session::flash('error', 'Failed to load form');
             Response::redirect(APP_URL . '/admin/categories');
@@ -117,7 +118,7 @@ class CategoryController
                 Session::flashInput($_POST);
                 Response::redirect(APP_URL . '/admin/categories/create');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Category store error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while creating category');
             Session::flashInput($_POST);
@@ -141,12 +142,13 @@ class CategoryController
                 'pageTitle' => 'Edit Category',
                 'category' => $category,
                 'parentCategories' => $parentCategories,
+                'allCategories' => $parentCategories,
             ];
 
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/categories/edit.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Category edit error: " . $e->getMessage());
             Session::flash('error', 'Failed to load category');
             Response::redirect(APP_URL . '/admin/categories');
@@ -180,7 +182,7 @@ class CategoryController
             if (empty($name)) {
                 Session::flash('error', 'Category name is required');
                 Session::flashInput($_POST);
-                Response::redirect(APP_URL . "/admin/categories/{$id}/edit");
+                Response::redirect(APP_URL . "/admin/categories/edit/{$id}");
                 return;
             }
 
@@ -195,7 +197,7 @@ class CategoryController
                 } else {
                     Session::flash('error', 'Failed to upload image. Allowed types: JPEG, PNG, GIF, WebP');
                     Session::flashInput($_POST);
-                    Response::redirect(APP_URL . "/admin/categories/{$id}/edit");
+                    Response::redirect(APP_URL . "/admin/categories/edit/{$id}");
                     return;
                 }
             }
@@ -220,13 +222,13 @@ class CategoryController
             } else {
                 Session::flash('error', 'Failed to update category');
                 Session::flashInput($_POST);
-                Response::redirect(APP_URL . "/admin/categories/{$id}/edit");
+                Response::redirect(APP_URL . "/admin/categories/edit/{$id}");
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Category update error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while updating category');
             Session::flashInput($_POST);
-            Response::redirect(APP_URL . "/admin/categories/{$id}/edit");
+            Response::redirect(APP_URL . "/admin/categories/edit/{$id}");
         }
     }
 
@@ -256,7 +258,7 @@ class CategoryController
                 }
                 Session::flash('success', 'Category deleted successfully');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Category delete error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while deleting category');
         }
@@ -284,7 +286,7 @@ class CategoryController
             $this->categoryModel->update($id, ['status' => $newStatus, 'updated_at' => date('Y-m-d H:i:s')]);
 
             Session::flash('success', 'Category status updated');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Category toggle error: " . $e->getMessage());
             Session::flash('error', 'Failed to update status');
         }

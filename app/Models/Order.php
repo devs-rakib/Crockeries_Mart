@@ -8,9 +8,41 @@ class Order
     private Database $db;
     private string $table = 'orders';
 
+    const STATUSES = [
+        'pending'           => ['label' => 'Pending',           'color' => 'bg-warning text-dark', 'icon' => 'bi-clock'],
+        'confirmed'         => ['label' => 'Confirmed',         'color' => 'bg-info',              'icon' => 'bi-check-circle'],
+        'processing'        => ['label' => 'Processing',        'color' => 'bg-primary',           'icon' => 'bi-gear'],
+        'shipped'           => ['label' => 'Shipped',           'color' => 'bg-info',              'icon' => 'bi-truck'],
+        'out_for_delivery'  => ['label' => 'Out for Delivery',  'color' => 'bg-warning text-dark', 'icon' => 'bi-box-seam'],
+        'delivered'         => ['label' => 'Delivered',         'color' => 'bg-success',           'icon' => 'bi-check-circle-fill'],
+        'cancelled'         => ['label' => 'Cancelled',         'color' => 'bg-danger',            'icon' => 'bi-x-circle'],
+        'returned'          => ['label' => 'Returned',          'color' => 'bg-secondary',         'icon' => 'bi-arrow-return-left'],
+        'refunded'          => ['label' => 'Refunded',          'color' => 'bg-info',              'icon' => 'bi-cash'],
+        'failed'            => ['label' => 'Failed',            'color' => 'bg-danger',            'icon' => 'bi-exclamation-circle'],
+    ];
+
+    const NORMAL_FLOW = ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered'];
+
+    const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded'];
+
     public function __construct()
     {
         $this->db = Database::getInstance();
+    }
+
+    public static function getStatusInfo(string $status): array
+    {
+        return self::STATUSES[$status] ?? ['label' => ucfirst($status), 'color' => 'bg-secondary', 'icon' => 'bi-circle'];
+    }
+
+    public static function getAllStatuses(): array
+    {
+        return self::STATUSES;
+    }
+
+    public static function canCancel(string $status): bool
+    {
+        return in_array($status, ['pending', 'confirmed']);
     }
 
     public function create(array $data): int
@@ -77,6 +109,16 @@ class Order
     public function updatePaymentStatus(int $id, string $status): int
     {
         return $this->db->update($this->table, ['payment_status' => $status], 'id = ?', [$id]);
+    }
+
+    public function updateTransactionId(int $id, string $transactionId): int
+    {
+        return $this->db->update($this->table, ['transaction_id' => $transactionId], 'id = ?', [$id]);
+    }
+
+    public function getByTransactionId(string $transactionId): ?array
+    {
+        return $this->db->fetch("SELECT * FROM {$this->table} WHERE transaction_id = ?", [$transactionId]);
     }
 
     public function addStatusHistory(int $orderId, string $status, string $note = ''): void
@@ -165,5 +207,88 @@ class Order
         $this->db->delete('order_status_history', 'order_id = ?', [$id]);
         $this->db->delete('order_items', 'order_id = ?', [$id]);
         return $this->db->delete($this->table, 'id = ?', [$id]);
+    }
+
+    public function getByUserId(int $userId, int $limit = 50): array
+    {
+        return $this->db->fetchAll(
+            "SELECT o.*, (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as item_count
+             FROM {$this->table} o WHERE o.user_id = ? ORDER BY o.created_at DESC LIMIT ?",
+            [$userId, $limit]
+        );
+    }
+
+    public function getOrderStatusCounts(): array
+    {
+        $result = $this->db->fetchAll(
+            "SELECT order_status, COUNT(*) as count FROM {$this->table} GROUP BY order_status"
+        );
+        $counts = [];
+        foreach (array_keys(self::STATUSES) as $s) {
+            $counts[$s] = 0;
+        }
+        foreach ($result as $row) {
+            $counts[$row['order_status']] = (int) $row['count'];
+        }
+        return $counts;
+    }
+
+    public function getStockReport(): array
+    {
+        return $this->db->fetchAll(
+            "SELECT p.id, p.name, p.sku, p.stock_quantity,
+                    COALESCE(SUM(CASE WHEN o.order_status != 'cancelled' THEN oi.quantity ELSE 0 END), 0) as total_sold,
+                    p.stock_quantity + COALESCE(SUM(CASE WHEN o.order_status != 'cancelled' THEN oi.quantity ELSE 0 END), 0) as original_stock
+             FROM products p
+             LEFT JOIN order_items oi ON p.id = oi.product_id
+             LEFT JOIN orders o ON oi.order_id = o.id AND o.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+             WHERE p.status = 1
+             GROUP BY p.id
+             ORDER BY p.stock_quantity ASC
+             LIMIT 20"
+        );
+    }
+
+    public function getNewCustomers(int $days = 7): array
+    {
+        return $this->db->fetchAll(
+            "SELECT u.id, u.name, u.email, u.phone, u.created_at
+             FROM users u
+             WHERE u.role = 'customer' AND u.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+             ORDER BY u.created_at DESC LIMIT 10",
+            [$days]
+        );
+    }
+
+    public function getEvaluationMetrics(): array
+    {
+        $totalOrders = $this->countAll();
+        $completedOrders = $this->countByStatus('completed');
+        $totalRevenue = (float) ($this->db->fetch(
+            "SELECT COALESCE(SUM(total_amount), 0) as total FROM {$this->table} WHERE payment_status = 'paid'"
+        )['total'] ?? 0);
+
+        $avgOrderValue = $totalOrders > 0 ? $totalRevenue / max($completedOrders, 1) : 0;
+        $completionRate = $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100, 1) : 0;
+
+        $lastMonthRevenue = (float) ($this->db->fetch(
+            "SELECT COALESCE(SUM(total_amount), 0) as total FROM {$this->table}
+             WHERE payment_status = 'paid' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"
+        )['total'] ?? 0);
+        $prevMonthRevenue = (float) ($this->db->fetch(
+            "SELECT COALESCE(SUM(total_amount), 0) as total FROM {$this->table}
+             WHERE payment_status = 'paid' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 60 DAY) AND created_at < DATE_SUB(CURDATE(), INTERVAL 30 DAY)"
+        )['total'] ?? 0);
+
+        $revenueGrowth = $prevMonthRevenue > 0 ? round((($lastMonthRevenue - $prevMonthRevenue) / $prevMonthRevenue) * 100, 1) : 0;
+
+        return [
+            'total_revenue'     => $totalRevenue,
+            'avg_order_value'   => round($avgOrderValue, 2),
+            'completion_rate'   => $completionRate,
+            'revenue_growth'    => $revenueGrowth,
+            'total_orders'      => $totalOrders,
+            'completed_orders'  => $completedOrders,
+        ];
     }
 }

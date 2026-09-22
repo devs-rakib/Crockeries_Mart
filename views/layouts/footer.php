@@ -3,31 +3,7 @@
  * Footer Layout - CrokersesMart
  * @var mixed $data Extracted view variables
  */
-$newsletterTitle = $data['newsletter_title'] ?? 'Join Our Newsletter';
-$newsletterText = $data['newsletter_text'] ?? 'Subscribe to get updates on new arrivals and exclusive offers.';
 ?>
-<!-- Newsletter Section -->
-<section class="newsletter-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-5 col-md-6">
-                <div class="newsletter-content">
-                    <h3><?= $newsletterTitle ?></h3>
-                    <p><?= $newsletterText ?></p>
-                </div>
-            </div>
-            <div class="col-lg-7 col-md-6">
-                <form class="newsletter-form" id="newsletterForm" method="POST" action="<?= APP_URL ?>/newsletter/subscribe">
-                    <div class="input-group">
-                        <input type="email" class="form-control" name="email" placeholder="Enter your email address" required>
-                        <button type="submit" class="btn btn-primary">Subscribe</button>
-                    </div>
-                    <div class="newsletter-response" id="newsletterResponse"></div>
-                </form>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- Footer Main -->
 <footer class="site-footer">
@@ -39,13 +15,14 @@ $newsletterText = $data['newsletter_text'] ?? 'Subscribe to get updates on new a
                     <h4 class="footer-title">About Us</h4>
                     <div class="footer-about">
                         <a href="<?= APP_URL ?>/" class="footer-logo">
-                            <img src="<?= APP_URL ?>/assets/images/logo-white.png" alt="<?= SITE_NAME ?>">
+                            <img src="<?= APP_URL ?>/assets/images/logo-icon.svg" alt="" style="width:36px;height:36px;color:var(--white)">
+                            <span style="font-weight:700; font-size:20px; color:white"><em style="font-style:normal">Crokerses </em>Mart</span>
                         </a>
                         <p>We are committed to providing you with the best quality crockery and kitchenware at affordable prices. Shop with confidence.</p>
                         <div class="footer-social">
-                            <a href="<?= SITE_FACEBOOK ?>" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                            <a href="<?= SITE_YOUTUBE ?>" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                            <a href="<?= SITE_INSTAGRAM ?>" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="<?= SITE_FACEBOOK ?>" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                            <a href="<?= SITE_YOUTUBE ?>" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                            <a href="<?= SITE_INSTAGRAM ?>" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
                         </div>
                     </div>
                 </div>
@@ -87,19 +64,19 @@ $newsletterText = $data['newsletter_text'] ?? 'Subscribe to get updates on new a
                     <h4 class="footer-title">Contact Info</h4>
                     <ul class="footer-contact">
                         <li>
-                            <i class="fas fa-map-marker-alt"></i>
+                            <i class="bi bi-geo-alt"></i>
                             <span><?= SITE_ADDRESS ?></span>
                         </li>
                         <li>
-                            <i class="fas fa-phone-alt"></i>
+                            <i class="bi bi-telephone"></i>
                             <a href="tel:<?= SITE_PHONE ?>"><?= SITE_PHONE ?></a>
                         </li>
                         <li>
-                            <i class="fas fa-envelope"></i>
+                            <i class="bi bi-envelope"></i>
                             <a href="mailto:<?= SITE_EMAIL ?>"><?= SITE_EMAIL ?></a>
                         </li>
                         <li>
-                            <i class="fas fa-clock"></i>
+                            <i class="bi bi-clock"></i>
                             <span>Sat - Fri: 10:00 AM - 8:00 PM</span>
                         </li>
                     </ul>
@@ -108,47 +85,6 @@ $newsletterText = $data['newsletter_text'] ?? 'Subscribe to get updates on new a
         </div>
     </div>
 </footer>
-
-<!-- Footer Bottom -->
-<section class="footer-bottom">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-4 col-md-6">
-                <div class="footer-bottom-info">
-                    <div class="info-icon">
-                        <i class="fas fa-shipping-fast"></i>
-                    </div>
-                    <div class="info-text">
-                        <h5>Express Delivery</h5>
-                        <p>Fast delivery across Bangladesh</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="footer-bottom-info">
-                    <div class="info-icon">
-                        <i class="fas fa-undo-alt"></i>
-                    </div>
-                    <div class="info-text">
-                        <h5>Return Policy</h5>
-                        <p>Easy 7-day return policy</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-12">
-                <div class="footer-bottom-info">
-                    <div class="info-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <div class="info-text">
-                        <h5>Secure Payment</h5>
-                        <p>100% secure checkout</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- Payment & Copyright -->
 <section class="footer-payment">
@@ -162,11 +98,10 @@ $newsletterText = $data['newsletter_text'] ?? 'Subscribe to get updates on new a
             <div class="col-lg-6 col-md-6">
                 <div class="payment-methods">
                     <span>We Accept:</span>
-                    <img src="<?= APP_URL ?>/assets/images/payment/bkash.png" alt="bKash" class="payment-icon">
-                    <img src="<?= APP_URL ?>/assets/images/payment/nagad.png" alt="Nagad" class="payment-icon">
-                    <img src="<?= APP_URL ?>/assets/images/payment/visa.png" alt="Visa" class="payment-icon">
-                    <img src="<?= APP_URL ?>/assets/images/payment/mastercard.png" alt="Mastercard" class="payment-icon">
-                    <img src="<?= APP_URL ?>/assets/images/payment/cod.png" alt="Cash on Delivery" class="payment-icon">
+                    <img src="<?= APP_URL ?>/assets/images/payment/sslcommerz.svg" alt="SSLCommerz" class="payment-icon" title="SSLCommerz">
+                    <img src="<?= APP_URL ?>/assets/images/payment/visa.svg" alt="Visa" class="payment-icon" title="Visa">
+                    <img src="<?= APP_URL ?>/assets/images/payment/mastercard.svg" alt="Mastercard" class="payment-icon" title="Mastercard">
+                    <img src="<?= APP_URL ?>/assets/images/payment/cod.svg" alt="Cash on Delivery" class="payment-icon" title="Cash on Delivery">
                 </div>
             </div>
         </div>
@@ -175,11 +110,8 @@ $newsletterText = $data['newsletter_text'] ?? 'Subscribe to get updates on new a
 
 <!-- Back to Top -->
 <button class="back-to-top" id="backToTop" aria-label="Back to top">
-    <i class="fas fa-chevron-up"></i>
+    <i class="bi bi-chevron-up"></i>
 </button>
-
-<!-- Bootstrap 5.3 JS CDN -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
 <!-- Swiper 11 JS -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>

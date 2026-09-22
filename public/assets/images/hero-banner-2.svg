@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="600" height="250">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="250" rx="12" fill="url(#bg2)"/>
+  <text x="40" y="100" font-family="Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff">Combo Offers</text>
+  <text x="40" y="140" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.85)">Save more when you buy together</text>
+  <rect x="40" y="165" width="140" height="42" rx="8" fill="#ff3838"/>
+  <text x="110" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff">View Deals</text>
+  <circle cx="500" cy="125" r="70" fill="rgba(255,56,56,0.15)"/>
+  <circle cx="520" cy="100" r="40" fill="rgba(255,56,56,0.1)"/>
+</svg>

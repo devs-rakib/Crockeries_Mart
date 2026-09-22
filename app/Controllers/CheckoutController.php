@@ -3,6 +3,8 @@ namespace App\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
+use App\Helpers\Auth;
 use App\Helpers\Session;
 use App\Helpers\Response;
 use App\Helpers\Validator;
@@ -14,11 +16,13 @@ class CheckoutController
 {
     private Order $orderModel;
     private Product $productModel;
+    private User $userModel;
 
     public function __construct()
     {
         $this->orderModel = new Order();
         $this->productModel = new Product();
+        $this->userModel = new User();
     }
 
     public function index(): void
@@ -28,10 +32,16 @@ class CheckoutController
             return;
         }
 
+        $user = null;
+        if (Auth::check()) {
+            $user = $this->userModel->getById(Auth::id());
+        }
+
         $data = [
             'pageTitle' => 'Checkout',
             'cart'      => Session::getCart(),
             'subtotal'  => Session::getCartTotal(),
+            'user'      => $user,
         ];
 
         require APP_ROOT . '/views/layouts/header.php';
@@ -66,6 +76,31 @@ class CheckoutController
         $db->getConnection()->beginTransaction();
 
         try {
+            $customerName  = Sanitizer::clean($_POST['customer_name']);
+            $customerPhone = Sanitizer::clean($_POST['customer_phone']);
+            $customerEmail = !empty($_POST['customer_email']) ? Sanitizer::clean($_POST['customer_email']) : null;
+
+            $user = null;
+            if (Auth::check()) {
+                $user = $this->userModel->getById(Auth::id());
+            }
+
+            if (!$user) {
+                $user = $this->userModel->getByPhone($customerPhone);
+            }
+
+            if (!$user) {
+                $userId = $this->userModel->createAuto($customerName, $customerPhone, $customerEmail);
+                $user = $this->userModel->getById($userId);
+            } else {
+                $this->userModel->update($user['id'], [
+                    'name'  => $customerName,
+                    'email' => $customerEmail ?? $user['email'],
+                ]);
+            }
+
+            Auth::login($user);
+
             $subtotal = 0;
             $orderItems = [];
 
@@ -95,15 +130,15 @@ class CheckoutController
 
             $orderData = [
                 'order_number'     => $this->orderModel->generateOrderNumber(),
-                'user_id'          => Session::get('user_id'),
-                'customer_name'    => Sanitizer::clean($_POST['customer_name']),
-                'customer_phone'   => Sanitizer::clean($_POST['customer_phone']),
-                'customer_email'   => Sanitizer::clean($_POST['customer_email'] ?? ''),
+                'user_id'          => $user['id'],
+                'customer_name'    => $customerName,
+                'customer_phone'   => $customerPhone,
+                'customer_email'   => $customerEmail,
                 'shipping_address' => Sanitizer::clean($_POST['shipping_address']),
                 'total_amount'     => $totalAmount,
                 'shipping_cost'    => $shippingCost,
                 'payment_method'   => Sanitizer::clean($_POST['payment_method']),
-                'payment_status'   => $_POST['payment_method'] === 'cod' ? 'pending' : 'pending',
+                'payment_status'   => 'pending',
                 'order_status'     => 'pending',
                 'created_at'       => date('Y-m-d H:i:s'),
             ];
@@ -118,22 +153,34 @@ class CheckoutController
             Mailer::orderConfirmation($fullOrder, $fullItems);
 
             $db->getConnection()->commit();
+
             Session::setCart([]);
 
-            Response::json([
-                'success'     => true,
-                'message'     => 'Order placed successfully!',
-                'order_number' => $orderData['order_number'],
-                'redirect'    => APP_URL . '/order/success/' . $orderData['order_number'],
-            ]);
+            if ($_POST['payment_method'] === 'sslcommerz') {
+                Session::set('pending_sslcommerz_order_id', $orderId);
+                Response::json([
+                    'success'      => true,
+                    'message'      => 'Redirecting to payment...',
+                    'order_number' => $orderData['order_number'],
+                    'redirect'     => APP_URL . '/payment/initiate',
+                ]);
+            } else {
+                Response::json([
+                    'success'      => true,
+                    'message'      => 'Order placed successfully!',
+                    'order_number' => $orderData['order_number'],
+                    'redirect'     => APP_URL . '/order-success?order=' . $orderData['order_number'],
+                ]);
+            }
         } catch (\Exception $e) {
             $db->getConnection()->rollBack();
             Response::error($e->getMessage());
         }
     }
 
-    public function success(string $orderNumber): void
+    public function success(): void
     {
+        $orderNumber = $_GET['order'] ?? '';
         $order = $this->orderModel->getByNumber($orderNumber);
         if (!$order) {
             http_response_code(404);

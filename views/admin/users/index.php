@@ -5,7 +5,7 @@ use App\Helpers\Sanitizer;
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Users</h4>
     <div class="text-muted">
-        Total: <strong><?= $pagination->total() ?? 0 ?></strong> users
+        Total: <strong><?= $total ?? 0 ?></strong> users
     </div>
 </div>
 
@@ -17,11 +17,11 @@ use App\Helpers\Sanitizer;
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-outline-primary me-2">
-                    <i class="fas fa-search me-1"></i> Search
+                    <i class="bi bi-search me-1"></i> Search
                 </button>
                 <?php if (!empty($search)): ?>
                     <a href="<?= ADMIN_URL ?>users" class="btn btn-outline-secondary">
-                        <i class="fas fa-times me-1"></i> Clear
+                        <i class="bi bi-x-lg me-1"></i> Clear
                     </a>
                 <?php endif; ?>
             </div>
@@ -33,7 +33,7 @@ use App\Helpers\Sanitizer;
     <div class="card-body p-0">
         <?php if (empty($users)): ?>
             <div class="text-center py-5">
-                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <i class="bi bi-people fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">No users found</h5>
                 <p class="text-muted">There are no users matching your search.</p>
             </div>
@@ -87,13 +87,13 @@ use App\Helpers\Sanitizer;
                                     <form method="POST" action="<?= ADMIN_URL ?>users/toggleStatus/<?= (int)$user['id'] ?>" class="d-inline">
                                         <?= CSRF::field() ?>
                                         <button type="submit" class="btn btn-sm <?= $user['status'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" title="<?= $user['status'] ? 'Deactivate' : 'Activate' ?>">
-                                            <i class="fas fa-<?= $user['status'] ? 'ban' : 'check' ?>"></i>
+                                            <i class="bi bi-<?= $user['status'] ? 'slash-circle' : 'check-lg' ?>"></i>
                                         </button>
                                     </form>
                                     <form method="POST" action="<?= ADMIN_URL ?>users/destroy/<?= (int)$user['id'] ?>" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
                                         <?= CSRF::field() ?>
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 </td>

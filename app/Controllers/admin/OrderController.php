@@ -36,18 +36,13 @@ class OrderController
                 'totalPages' => $result['total_pages'],
                 'status' => $status,
                 'search' => $search,
-                'statusCounts' => [
-                    'pending' => $this->orderModel->countByStatus('pending'),
-                    'processing' => $this->orderModel->countByStatus('processing'),
-                    'completed' => $this->orderModel->countByStatus('completed'),
-                    'cancelled' => $this->orderModel->countByStatus('cancelled'),
-                ],
+                'statusCounts' => $this->orderModel->getOrderStatusCounts(),
             ];
 
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/orders/index.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Order list error: " . $e->getMessage());
             Session::flash('error', 'Failed to load orders');
             Response::redirect(APP_URL . '/admin');
@@ -77,7 +72,7 @@ class OrderController
             require APP_ROOT . '/views/admin/admin_header.php';
             require APP_ROOT . '/views/admin/orders/view.php';
             require APP_ROOT . '/views/admin/admin_footer.php';
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Order view error: " . $e->getMessage());
             Session::flash('error', 'Failed to load order details');
             Response::redirect(APP_URL . '/admin/orders');
@@ -100,18 +95,18 @@ class OrderController
                 return;
             }
 
-            $orderStatus = Sanitizer::clean($_POST['order_status'] ?? '');
+            $orderStatus = Sanitizer::clean($_POST['status'] ?? '');
             $paymentStatus = Sanitizer::clean($_POST['payment_status'] ?? '');
             $note = Sanitizer::clean($_POST['note'] ?? '');
 
-            $validOrderStatuses = ['pending', 'processing', 'completed', 'cancelled'];
+            $validOrderStatuses = array_keys(Order::STATUSES);
             if (!in_array($orderStatus, $validOrderStatuses)) {
                 Session::flash('error', 'Invalid order status');
                 Response::redirect(APP_URL . "/admin/orders/{$id}");
                 return;
             }
 
-            $validPaymentStatuses = ['pending', 'paid', 'failed', 'refunded'];
+            $validPaymentStatuses = Order::PAYMENT_STATUSES;
             if (!in_array($paymentStatus, $validPaymentStatuses)) {
                 Session::flash('error', 'Invalid payment status');
                 Response::redirect(APP_URL . "/admin/orders/{$id}");
@@ -132,17 +127,21 @@ class OrderController
             if ($statusChanged) {
                 $historyNote = $note;
                 if (empty($historyNote)) {
-                    $historyNote = "Status updated from {$order['order_status']} to {$orderStatus}";
+                    $historyNote = "Status updated from " . ucfirst($order['order_status']) . " to " . ucfirst($orderStatus);
                 }
                 $this->orderModel->addStatusHistory($id, $orderStatus, $historyNote);
 
-                Mailer::orderStatusUpdate($order, $orderStatus);
+                try {
+                    Mailer::orderStatusUpdate($order, $orderStatus);
+                } catch (\Throwable $e) {
+                    error_log("Email send failed: " . $e->getMessage());
+                }
 
                 Session::flash('success', 'Order status updated successfully');
             } else {
                 Session::flash('info', 'No changes were made');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Order update error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while updating order');
         }
@@ -175,7 +174,7 @@ class OrderController
 
             $this->orderModel->addStatusHistory($id, $order['order_status'], $note);
             Session::flash('success', 'Note added successfully');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Order note error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while adding note');
         }
@@ -216,7 +215,7 @@ class OrderController
 
             $this->orderModel->addStatusHistory($id, $order['order_status'], "Payment status updated to {$paymentStatus}");
             Session::flash('success', 'Payment status updated successfully');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Order payment update error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while updating payment');
         }
@@ -247,7 +246,7 @@ class OrderController
             } else {
                 Session::flash('error', 'Failed to delete order');
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Order delete error: " . $e->getMessage());
             Session::flash('error', 'An error occurred while deleting order');
         }

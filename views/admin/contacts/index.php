@@ -12,7 +12,7 @@ use App\Helpers\Sanitizer;
     <div class="card-body p-0">
         <?php if (empty($contacts)): ?>
             <div class="text-center py-5">
-                <i class="fas fa-envelope-open fa-3x text-muted mb-3"></i>
+                <i class="bi bi-envelope-open fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">No contact messages</h5>
                 <p class="text-muted">When customers contact you, messages will appear here.</p>
             </div>
@@ -34,7 +34,7 @@ use App\Helpers\Sanitizer;
                             <tr class="<?= $contact['status'] == 0 ? 'table-light' : '' ?>">
                                 <td>
                                     <?php if ($contact['status'] == 0): ?>
-                                        <i class="fas fa-circle text-primary" style="font-size: 8px;"></i>
+                                        <i class="bi bi-circle-fill text-primary" style="font-size: 8px;"></i>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -45,12 +45,12 @@ use App\Helpers\Sanitizer;
                                 <td><small class="text-muted"><?= Sanitizer::timeAgo($contact['created_at']) ?></small></td>
                                 <td class="text-center">
                                     <a href="<?= ADMIN_URL ?>contacts/view/<?= (int)$contact['id'] ?>" class="btn btn-sm btn-outline-primary me-1" title="View">
-                                        <i class="fas fa-eye"></i>
+                                        <i class="bi bi-eye"></i>
                                     </a>
                                     <form method="POST" action="<?= ADMIN_URL ?>contacts/destroy/<?= (int)$contact['id'] ?>" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this message?');">
                                         <?= CSRF::field() ?>
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 </td>
