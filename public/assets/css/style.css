@@ -21,7 +21,7 @@
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 12px;
-    --transition: all 0.3s ease;
+    --transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
 }
 
 /* ---------- Reset & Base ---------- */
@@ -29,6 +29,11 @@
 *::before,
 *::after {
     box-sizing: border-box;
+}
+
+html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
 }
 
 body {
@@ -118,8 +123,7 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--primary-hover);
     border-color: var(--primary-hover);
     color: var(--white);
-    box-shadow: 0 4px 12px rgba(255, 56, 56, 0.35);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(255, 56, 56, 0.4);
 }
 
 .btn-outline-primary {
@@ -138,7 +142,7 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--primary);
     border-color: var(--primary);
     color: var(--white);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 56, 56, 0.3);
 }
 
 .btn-accent {
@@ -478,12 +482,12 @@ h1, h2, h3, h4, h5, h6 {
     padding: 6px 0;
     color: var(--text-muted);
     font-size: 14px;
-    transition: var(--transition);
+    transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .mega-menu .mega-column ul li a:hover {
     color: var(--primary);
-    padding-left: 6px;
+    transform: translateX(6px);
 }
 
 .mega-menu .mega-banner {
@@ -639,11 +643,13 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 2px;
     background-color: rgba(255,255,255,0.5);
     border: none;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .hero-slider .carousel-indicators .active {
     background-color: var(--primary);
-    width: 50px;
+    transform: scaleX(1.67);
+    transform-origin: center;
 }
 .carousel-indicators [data-bs-target] {
     border-top: 3px solid var(--primary) !important;
@@ -707,11 +713,12 @@ h1, h2, h3, h4, h5, h6 {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    transition: var(--transition);
+    transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
     position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
+    will-change: transform, box-shadow;
 }
 
 .product-card:hover {
@@ -723,7 +730,7 @@ h1, h2, h3, h4, h5, h6 {
 .product-card .product-image {
     position: relative;
     overflow: hidden;
-    padding-top: 100%;
+    aspect-ratio: 1 / 1;
     background-color: var(--light-bg);
 }
 
@@ -1156,7 +1163,7 @@ h1, h2, h3, h4, h5, h6 {
 .footer-links li a {
     color: rgba(255,255,255,0.65);
     font-size: 14px;
-    transition: var(--transition);
+    transition: color 0.3s ease, transform 0.3s ease;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1168,12 +1175,12 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 900;
     font-size: 12px;
     opacity: 0;
-    transition: var(--transition);
+    transition: opacity 0.3s ease;
 }
 
 .footer-links li a:hover {
     color: var(--primary);
-    padding-left: 4px;
+    transform: translateX(4px);
 }
 
 .footer-links li a:hover::before {
@@ -1298,9 +1305,10 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     visibility: hidden;
     transform: translateY(20px);
-    transition: var(--transition);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
     z-index: 999;
     box-shadow: var(--shadow-md);
+    will-change: transform, opacity;
 }
 
 .back-to-top.visible {
@@ -2905,3 +2913,50 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1;
 }
 .app-toast__close:hover { color: #333; }
+
+/* ---------- Skeleton Loader ---------- */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.skeleton-text { height: 14px; margin-bottom: 8px; border-radius: 4px; }
+.skeleton-title { height: 18px; width: 60%; margin-bottom: 10px; border-radius: 4px; }
+.skeleton-img { width: 100%; aspect-ratio: 1/1; }
+.skeleton-price { height: 20px; width: 40%; border-radius: 4px; }
+
+/* ---------- Swiper Not-Initialized Hiding ---------- */
+.cm-product-swiper:not(.swiper-initialized) .swiper-wrapper {
+    overflow: hidden;
+    max-height: 420px;
+}
+
+/* ---------- Wishlist Card Smooth Removal ---------- */
+.wishlist-card {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.wishlist-card.removing {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+/* ---------- Search Dropdown Min Height ---------- */
+.search-dropdown {
+    min-height: 60px;
+}
+
+/* ---------- Button Groups No Shift ---------- */
+.product-btn-group .btn {
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+/* ---------- Newsletter Button Fixed Size ---------- */
+.btn-newsletter {
+    min-width: 120px;
+    min-height: 44px;
+}

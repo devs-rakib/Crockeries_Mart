@@ -54,11 +54,11 @@ $formattedRegularPrice = Sanitizer::banglaPrice($regularPrice);
     <div class="product-image">
         <?php if ($imageUrl): ?>
             <a href="<?= $productUrl ?>">
-                <img src="<?= $imageUrl ?>" alt="<?= htmlspecialchars($productName) ?>" loading="lazy">
+                <img src="<?= $imageUrl ?>" alt="<?= htmlspecialchars($productName) ?>" loading="lazy" width="400" height="400">
             </a>
         <?php else: ?>
             <a href="<?= $productUrl ?>">
-                <img src="<?= APP_URL ?>/assets/images/placeholder-product.jpg" alt="<?= htmlspecialchars($productName) ?>" loading="lazy">
+                <img src="<?= APP_URL ?>/assets/images/placeholder-product.jpg" alt="<?= htmlspecialchars($productName) ?>" loading="lazy" width="400" height="400">
             </a>
         <?php endif; ?>
 

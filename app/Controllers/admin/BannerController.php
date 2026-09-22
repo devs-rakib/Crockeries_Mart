@@ -15,7 +15,7 @@ class BannerController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('manage_banners');
         $this->bannerModel = new Banner();
     }
 

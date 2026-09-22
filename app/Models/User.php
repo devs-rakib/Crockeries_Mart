@@ -41,7 +41,7 @@ class User
             'phone'      => $phone,
             'email'      => $email,
             'password'   => Auth::hashPassword(bin2hex(random_bytes(16))),
-            'role'       => 'customer',
+            'role_id'    => Auth::ROLE_USER,
             'status'     => 1,
             'created_at' => date('Y-m-d H:i:s'),
         ]);
@@ -57,24 +57,34 @@ class User
         return $this->db->delete($this->table, 'id = ?', [$id]);
     }
 
-    public function getAllAdmin(int $page = 1, int $perPage = 20, string $search = ''): array
+    public function getAllAdmin(int $page = 1, int $perPage = 20, string $search = '', int $roleFilter = 0): array
     {
         $where = ['1=1'];
         $params = [];
 
         if ($search) {
-            $where[] = '(name LIKE ? OR email LIKE ? OR phone LIKE ?)';
+            $where[] = '(u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)';
             $params[] = "%{$search}%";
             $params[] = "%{$search}%";
             $params[] = "%{$search}%";
         }
 
+        if ($roleFilter > 0) {
+            $where[] = 'u.role_id = ?';
+            $params[] = $roleFilter;
+        }
+
         $whereClause = implode(' AND ', $where);
         $offset = ($page - 1) * $perPage;
 
-        $total = $this->db->fetch("SELECT COUNT(*) as cnt FROM {$this->table} WHERE {$whereClause}", $params)['cnt'];
+        $total = $this->db->fetch("SELECT COUNT(*) as cnt FROM {$this->table} u WHERE {$whereClause}", $params)['cnt'];
 
-        $sql = "SELECT * FROM {$this->table} WHERE {$whereClause} ORDER BY created_at DESC LIMIT {$perPage} OFFSET {$offset}";
+        $sql = "SELECT u.*, r.name as role_name
+                FROM {$this->table} u
+                LEFT JOIN roles r ON u.role_id = r.id
+                WHERE {$whereClause}
+                ORDER BY u.created_at DESC
+                LIMIT {$perPage} OFFSET {$offset}";
 
         return [
             'users'       => $this->db->fetchAll($sql, $params),
@@ -86,7 +96,17 @@ class User
 
     public function countAll(): int
     {
-        return $this->db->count($this->table, "role = 'customer'");
+        return $this->db->count($this->table, 'role_id = ?', [Auth::ROLE_USER]);
+    }
+
+    public function countByRole(int $roleId): int
+    {
+        return $this->db->count($this->table, 'role_id = ?', [$roleId]);
+    }
+
+    public function updateRole(int $id, int $roleId): int
+    {
+        return $this->db->update($this->table, ['role_id' => $roleId], 'id = ?', [$id]);
     }
 
     public function toggleStatus(int $id): int
@@ -156,9 +176,9 @@ class User
         return $this->db->fetchAll(
             "SELECT id, name, email, phone, created_at
              FROM {$this->table}
-             WHERE role = 'customer' AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+             WHERE role_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
              ORDER BY created_at DESC LIMIT 10",
-            [$days]
+            [Auth::ROLE_USER, $days]
         );
     }
 }

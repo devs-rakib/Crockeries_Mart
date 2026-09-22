@@ -14,7 +14,7 @@ class ContactController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('manage_contacts');
         $this->contactModel = new Contact();
     }
 

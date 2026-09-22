@@ -54,10 +54,10 @@ const App = (() => {
         }, duration);
     };
 
+    const _escaper = document.createElement('div');
     const escapeHtml = (str) => {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+        _escaper.textContent = str;
+        return _escaper.innerHTML;
     };
 
     const initTooltips = () => {

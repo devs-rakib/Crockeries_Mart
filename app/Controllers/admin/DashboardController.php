@@ -21,7 +21,7 @@ class DashboardController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('view_dashboard');
         $this->productModel = new Product();
         $this->orderModel = new Order();
         $this->userModel = new User();

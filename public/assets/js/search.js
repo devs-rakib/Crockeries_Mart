@@ -6,7 +6,6 @@
 'use strict';
 
 const LiveSearch = (() => {
-    const AJAX_URL = 'ajax_handler.php';
     const DEBOUNCE_MS = 300;
     const MIN_CHARS = 2;
 
@@ -23,6 +22,11 @@ const LiveSearch = (() => {
         results: document.getElementById('searchResults')
     });
 
+    const getBaseUrl = () => {
+        const el = document.getElementById('liveSearch');
+        return el ? el.dataset.baseUrl : '';
+    };
+
     // ── Helpers ──────────────────────────────────────────────────
 
     const getCsrfToken = () => {
@@ -38,7 +42,7 @@ const LiveSearch = (() => {
 
     const formatPrice = (price) => {
         const num = parseFloat(price);
-        return isNaN(num) ? '₦0.00' : '₦' + num.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+        return isNaN(num) ? '৳0' : '৳' + num.toLocaleString('en-IN');
     };
 
     const debounce = (fn, delay) => {
@@ -63,7 +67,7 @@ const LiveSearch = (() => {
         showLoading(results);
 
         try {
-            const res = await fetch(AJAX_URL, {
+            const res = await fetch(getBaseUrl() + '/ajax_handler.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -129,7 +133,7 @@ const LiveSearch = (() => {
                     `).join('')}
                 </ul>
                 <div class="search-dropdown__footer">
-                    <a href="products.php?q=${encodeURIComponent(query)}" class="search-dropdown__view-all">
+                    <a href="${getBaseUrl()}/search?q=${encodeURIComponent(query)}" class="search-dropdown__view-all">
                         View all results for "${escapeHtml(query)}"
                     </a>
                 </div>
@@ -301,7 +305,7 @@ const LiveSearch = (() => {
                 }
                 if (isOpen && activeIndex >= 0 && currentResults[activeIndex]) {
                     e.preventDefault();
-                    window.location.href = currentResults[activeIndex].url || `products.php?q=${encodeURIComponent(val)}`;
+                    window.location.href = currentResults[activeIndex].url || `${getBaseUrl()}/search?q=${encodeURIComponent(val)}`;
                 }
             });
         }

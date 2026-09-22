@@ -15,7 +15,7 @@ class OrderController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('manage_orders');
         $this->orderModel = new Order();
     }
 

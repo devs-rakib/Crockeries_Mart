@@ -39,7 +39,8 @@ $totalImages = max(count($images), 1);
                              src="<?= Sanitizer::image($images[0]['image_path'] ?? $product['main_image'] ?? '') ?>"
                              alt="<?= htmlspecialchars($product['name']) ?>"
                              class="pd-main-img"
-                             loading="eager">
+                             loading="eager"
+                             width="800" height="800">
                         <div class="pd-img-counter"><span id="pdImgIndex">1</span> / <?= $totalImages ?></div>
                     </div>
                     <?php if ($totalImages > 1): ?>
@@ -49,7 +50,7 @@ $totalImages = max(count($images), 1);
                                         class="pd-thumb <?= $idx === 0 ? 'active' : '' ?>"
                                         data-index="<?= $idx ?>"
                                         data-image="<?= Sanitizer::image($image['image_path']) ?>">
-                                    <img src="<?= Sanitizer::image($image['image_path']) ?>" alt="Image <?= $idx + 1 ?>" loading="lazy">
+                                    <img src="<?= Sanitizer::image($image['image_path']) ?>" alt="Image <?= $idx + 1 ?>" loading="lazy" width="72" height="72">
                                 </button>
                             <?php endforeach; ?>
                         </div>
@@ -327,7 +328,7 @@ $totalImages = max(count($images), 1);
                 <div class="col-6 col-md-4 col-lg-3">
                     <a href="<?= APP_URL ?>/product/<?= htmlspecialchars($rp['slug']) ?>" class="pd-rel-card">
                         <div class="pd-rel-img">
-                            <img src="<?= Sanitizer::image($rp['main_image'] ?? '') ?>" alt="<?= htmlspecialchars($rp['name']) ?>" loading="lazy">
+                            <img src="<?= Sanitizer::image($rp['main_image'] ?? '') ?>" alt="<?= htmlspecialchars($rp['name']) ?>" loading="lazy" width="400" height="400">
                         </div>
                         <div class="pd-rel-info">
                             <h6><?= htmlspecialchars($rp['name']) ?></h6>
@@ -594,6 +595,10 @@ $totalImages = max(count($images), 1);
     .pd-btn-wish { width: 100%; height: 44px; }
     .pd-trust { grid-template-columns: 1fr; }
 }
+
+/* ── Spin Animation (for loading states) ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; }
 </style>
 
 <!-- ═══ SCRIPTS ═══ -->
@@ -783,10 +788,5 @@ document.addEventListener('DOMContentLoaded', function() {
         navigator.clipboard.writeText(window.location.href);
         if (typeof App !== 'undefined' && App.toast) App.toast('Link copied!', 'success');
     });
-
-    /* ── Spin Animation ── */
-    var style = document.createElement('style');
-    style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin .8s linear infinite}';
-    document.head.appendChild(style);
 });
 </script>

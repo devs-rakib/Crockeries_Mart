@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 if (isset($data)) extract($data);
 
 use App\Helpers\Session;
+use App\Helpers\Auth;
 
 $currentUrl = $_SERVER['REQUEST_URI'] ?? '';
 $adminName = Session::get('user_name') ?? 'Admin';
@@ -73,7 +74,7 @@ $adminName = Session::get('user_name') ?? 'Admin';
             font-size: 18px;
             box-shadow: 0 4px 12px rgba(255, 56, 56, 0.3);
         }
-        .sidebar-logo-text { font-size: 17px; font-weight: 700; color: #111827; letter-spacing: -0.5px; }
+        .sidebar-logo-text { font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
         .sidebar-logo-text em { font-style: normal; color: var(--admin-primary); }
 
         .sidebar-nav { padding: 16px 0; }
@@ -262,6 +263,7 @@ $adminName = Session::get('user_name') ?? 'Admin';
                 </a>
             </li>
 
+            <?php if (Auth::hasPermission('manage_products') || Auth::hasPermission('create_product') || Auth::hasPermission('edit_product')): ?>
             <li class="nav-item">
                 <a href="#submenuProducts" class="nav-link <?= (strpos($currentUrl, '/admin/products') !== false || strpos($currentUrl, '/admin/product') !== false) ? 'active' : '' ?>" data-bs-toggle="collapse" role="button" aria-expanded="<?= (strpos($currentUrl, '/admin/product') !== false) ? 'true' : 'false' ?>">
                     <i class="bi bi-box-seam"></i> Products
@@ -273,69 +275,98 @@ $adminName = Session::get('user_name') ?? 'Admin';
                             All Products
                         </a>
                     </li>
+                    <?php if (Auth::hasPermission('create_product')): ?>
                     <li class="nav-item">
                         <a href="<?= APP_URL ?>/admin/products/create" class="nav-link <?= (strpos($currentUrl, '/admin/products/create') !== false) ? 'active' : '' ?>">
                             Add New
                         </a>
                     </li>
+                    <?php endif; ?>
                 </ul>
             </li>
+            <?php endif; ?>
 
+            <?php if (Auth::hasPermission('manage_categories')): ?>
             <li class="nav-item">
                 <a href="<?= APP_URL ?>/admin/categories" class="nav-link <?= (strpos($currentUrl, '/admin/categories') !== false || strpos($currentUrl, '/admin/category') !== false) ? 'active' : '' ?>">
                     <i class="bi bi-tags"></i> Categories
                 </a>
             </li>
+            <?php endif; ?>
 
+            <?php if (Auth::hasPermission('manage_brands')): ?>
             <li class="nav-item">
                 <a href="<?= APP_URL ?>/admin/brands" class="nav-link <?= (strpos($currentUrl, '/admin/brands') !== false || strpos($currentUrl, '/admin/brand') !== false) ? 'active' : '' ?>">
                     <i class="bi bi-award"></i> Brands
                 </a>
             </li>
+            <?php endif; ?>
 
             <div class="nav-section">Sales</div>
 
+            <?php if (Auth::hasPermission('manage_orders') || Auth::hasPermission('view_orders')): ?>
             <li class="nav-item">
                 <a href="<?= APP_URL ?>/admin/orders" class="nav-link <?= (strpos($currentUrl, '/admin/orders') !== false || strpos($currentUrl, '/admin/order') !== false) ? 'active' : '' ?>">
                     <i class="bi bi-cart-check"></i> Orders
                 </a>
             </li>
+            <?php endif; ?>
 
             <div class="nav-section">Content</div>
 
+            <?php if (Auth::hasPermission('manage_banners')): ?>
             <li class="nav-item">
                 <a href="<?= APP_URL ?>/admin/banners" class="nav-link <?= (strpos($currentUrl, '/admin/banners') !== false || strpos($currentUrl, '/admin/banner') !== false) ? 'active' : '' ?>">
                     <i class="bi bi-image"></i> Banners
                 </a>
             </li>
+            <?php endif; ?>
 
             <div class="nav-section">Users</div>
 
+            <?php if (Auth::hasPermission('manage_users')): ?>
             <li class="nav-item">
                 <a href="<?= APP_URL ?>/admin/users" class="nav-link <?= (strpos($currentUrl, '/admin/users') !== false) ? 'active' : '' ?>">
-                    <i class="bi bi-people"></i> Customers
+                    <i class="bi bi-people"></i> Users
                 </a>
             </li>
+            <?php endif; ?>
 
+            <?php if (Auth::hasPermission('manage_contacts')): ?>
             <li class="nav-item">
                 <a href="<?= APP_URL ?>/admin/contacts" class="nav-link <?= (strpos($currentUrl, '/admin/contacts') !== false) ? 'active' : '' ?>">
                     <i class="bi bi-envelope"></i> Contacts
                 </a>
             </li>
+            <?php endif; ?>
 
+            <?php if (Auth::hasPermission('manage_support')): ?>
             <li class="nav-item">
                 <a href="<?= APP_URL ?>/admin/support" class="nav-link <?= (strpos($currentUrl, '/admin/support') !== false) ? 'active' : '' ?>">
                     <i class="bi bi-headset"></i> Support Tickets
                 </a>
             </li>
+            <?php endif; ?>
 
+            <?php if (Auth::hasPermission('manage_settings') || Auth::hasPermission('view_activity_logs')): ?>
             <div class="nav-section">System</div>
 
+            <?php if (Auth::hasPermission('manage_settings')): ?>
             <li class="nav-item">
                 <a href="<?= APP_URL ?>/admin/settings" class="nav-link <?= (strpos($currentUrl, '/admin/settings') !== false) ? 'active' : '' ?>">
                     <i class="bi bi-gear"></i> Settings
                 </a>
             </li>
+            <?php endif; ?>
+
+            <?php if (Auth::hasPermission('view_activity_logs')): ?>
+            <li class="nav-item">
+                <a href="<?= APP_URL ?>/admin/activity-logs" class="nav-link <?= (strpos($currentUrl, '/admin/activity-logs') !== false) ? 'active' : '' ?>">
+                    <i class="bi bi-clock-history"></i> Activity Logs
+                </a>
+            </li>
+            <?php endif; ?>
+            <?php endif; ?>
         </ul>
     </nav>
 </aside>
@@ -353,6 +384,15 @@ $adminName = Session::get('user_name') ?? 'Admin';
             <div class="admin-info">
                 <div class="avatar"><?= strtoupper(substr($adminName, 0, 1)) ?></div>
                 <span><?= htmlspecialchars($adminName) ?></span>
+                <?php
+                    $roleBadgeColor = match(Auth::role()) {
+                        Auth::ROLE_ADMIN   => 'bg-danger',
+                        Auth::ROLE_MANAGER => 'bg-primary',
+                        Auth::ROLE_STAFF   => 'bg-warning text-dark',
+                        default            => 'bg-info',
+                    };
+                ?>
+                <span class="badge <?= $roleBadgeColor ?> ms-1" style="font-size:10px;"><?= htmlspecialchars(Auth::roleName()) ?></span>
             </div>
             <a href="<?= APP_URL ?>" class="logout-btn" target="_blank" style="background:var(--admin-sidebar-hover);color:var(--text-dark);margin-right:8px;">
                 <i class="bi bi-globe"></i> View Website

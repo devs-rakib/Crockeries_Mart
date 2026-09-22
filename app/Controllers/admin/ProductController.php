@@ -19,7 +19,7 @@ class ProductController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('manage_products');
         $this->productModel = new Product();
         $this->categoryModel = new Category();
         $this->brandModel = new Brand();

@@ -128,7 +128,7 @@ $promoFeatures = $promoFeatures ?? [
 .cm-hero-cat-item:hover > a {
     background: #fdf5f5;
     color: var(--cm-primary);
-    padding-left: 17px;
+    transform: translateX(3px);
 }
 .cm-hero-cat-item .cat-icon {
     width: 22px;
@@ -191,7 +191,7 @@ $promoFeatures = $promoFeatures ?? [
 .cm-hero-cat-submenu li a:hover {
     background: #fdf5f5;
     color: var(--cm-primary);
-    padding-left: 20px;
+    transform: translateX(6px);
 }
 .cm-hero-cat-all-item {
     border-top: 1px solid #eee;
@@ -423,11 +423,12 @@ $promoFeatures = $promoFeatures ?? [
     background: rgba(0,0,0,0.25);
     border: none;
     padding: 0;
-    transition: all 0.2s;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 .cm-slider-dots button.active {
     background: #e53935;
-    width: 34px;
+    transform: scaleX(1.55);
+    transform-origin: center;
 }
 
 /* 4 Feature Cards Under Banner */
@@ -906,6 +907,9 @@ $promoFeatures = $promoFeatures ?? [
                                     <img src="<?= $slideImg ?>"
                                          alt="<?= $slideTitle ?>"
                                          class="cm-banner-full-img"
+                                         width="1200" height="400"
+                                         loading="<?= $i === 0 ? 'eager' : 'lazy' ?>"
+                                         <?= $i === 0 ? 'fetchpriority="high"' : '' ?>
                                          onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
                                 </a>
                             </div>
@@ -927,7 +931,7 @@ $promoFeatures = $promoFeatures ?? [
                                         <a href="<?= APP_URL ?>/shop" class="cm-slide-btn">ORDER NOW <i class="bi bi-arrow-right"></i></a>
                                     </div>
                                     <div class="cm-slide-media">
-                                        <img src="<?= APP_URL ?>/assets/images/Slider/Hero_s1.webp" alt="Crockeries Mart" onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
+                                        <img src="<?= APP_URL ?>/assets/images/Slider/Hero_s1.webp" alt="Crockeries Mart" width="500" height="400" loading="eager" onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
                                     </div>
                                 </div>
                             </div>
@@ -939,7 +943,7 @@ $promoFeatures = $promoFeatures ?? [
                                         <a href="<?= APP_URL ?>/shop" class="cm-slide-btn">SHOP NOW <i class="bi bi-arrow-right"></i></a>
                                     </div>
                                     <div class="cm-slide-media">
-                                        <img src="<?= APP_URL ?>/assets/images/Slider/Hero_s2.webp" alt="Kitchen Dining" onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
+                                        <img src="<?= APP_URL ?>/assets/images/Slider/Hero_s2.webp" alt="Kitchen Dining" width="500" height="400" loading="lazy" onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
                                     </div>
                                 </div>
                             </div>
@@ -951,7 +955,7 @@ $promoFeatures = $promoFeatures ?? [
                                         <a href="<?= APP_URL ?>/offer" class="cm-slide-btn">VIEW OFFERS <i class="bi bi-arrow-right"></i></a>
                                     </div>
                                     <div class="cm-slide-media">
-                                        <img src="<?= APP_URL ?>/assets/images/Slider/Hero_s3.webp" alt="Best Deals" onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
+                                        <img src="<?= APP_URL ?>/assets/images/Slider/Hero_s3.webp" alt="Best Deals" width="500" height="400" loading="lazy" onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
                                     </div>
                                 </div>
                             </div>
@@ -1017,7 +1021,7 @@ $promoFeatures = $promoFeatures ?? [
                             ?>
                             <a href="<?= APP_URL ?>/product/<?= urlencode($deal['slug']) ?>" class="cm-deal-item" title="<?= Sanitizer::clean($deal['name']) ?>">
                                 <div class="cm-deal-item-thumb">
-                                    <img src="<?= $dealImg ?>" alt="<?= htmlspecialchars($deal['name']) ?>" loading="lazy" onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
+                                    <img src="<?= $dealImg ?>" alt="<?= htmlspecialchars($deal['name']) ?>" loading="lazy" width="48" height="48" onerror="this.src='<?= APP_URL ?>/assets/images/placeholder.svg'">
                                 </div>
                                 <div class="cm-deal-item-info">
                                     <span class="cm-deal-price-current">Tk <?= number_format($currentPrice, 0) ?></span>
@@ -1200,7 +1204,7 @@ $promoFeatures = $promoFeatures ?? [
                 ?>
                 <a href="<?= APP_URL ?>/shop?brand=<?= urlencode($brand['slug']) ?>" class="cm-brand-item">
                     <?php if ($brandLogo && strpos($brandLogo, 'placeholder') === false): ?>
-                        <img src="<?= $brandLogo ?>" alt="<?= Sanitizer::clean($brand['name']) ?>" loading="lazy" onerror="this.style.display='none'">
+                        <img src="<?= $brandLogo ?>" alt="<?= Sanitizer::clean($brand['name']) ?>" loading="lazy" width="120" height="40" onerror="this.style.display='none'">
                     <?php else: ?>
                         <div style="height:40px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:var(--cm-primary);">
                             <?= strtoupper(substr($brand['name'], 0, 2)) ?>

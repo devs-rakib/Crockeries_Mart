@@ -4,22 +4,34 @@ use App\Helpers\Sanitizer;
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">Users</h4>
-    <div class="text-muted">
-        Total: <strong><?= $total ?? 0 ?></strong> users
+    <div class="d-flex gap-2">
+        <a href="<?= ADMIN_URL ?>users/create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add User
+        </a>
     </div>
 </div>
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <form method="GET" action="<?= ADMIN_URL ?>users" class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-5">
                 <input type="text" name="search" class="form-control" placeholder="Search by name, email, phone..." value="<?= Sanitizer::clean($search ?? '') ?>">
+            </div>
+            <div class="col-md-3">
+                <select name="role" class="form-select">
+                    <option value="0">All Roles</option>
+                    <?php foreach ($roles ?? [] as $role): ?>
+                        <option value="<?= (int)$role['id'] ?>" <?= ((int)($roleFilter ?? 0) === (int)$role['id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($role['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-outline-primary me-2">
                     <i class="bi bi-search me-1"></i> Search
                 </button>
-                <?php if (!empty($search)): ?>
+                <?php if (!empty($search) || !empty($roleFilter)): ?>
                     <a href="<?= ADMIN_URL ?>users" class="btn btn-outline-secondary">
                         <i class="bi bi-x-lg me-1"></i> Clear
                     </a>
@@ -55,25 +67,28 @@ use App\Helpers\Sanitizer;
                         <?php foreach ($users as $user): ?>
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; font-size: 0.85rem;">
+                                    <a href="<?= ADMIN_URL ?>users/view/<?= (int)$user['id'] ?>" class="text-decoration-none d-flex align-items-center" style="background-color: #05516038; color:white;">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; font-size: 0.85rem; ">
                                             <?= strtoupper(substr(Sanitizer::clean($user['name']), 0, 1)) ?>
                                         </div>
-                                        <strong><?= Sanitizer::clean($user['name']) ?></strong>
-                                    </div>
+                                        <strong style="color: black;"><?= Sanitizer::clean($user['name']) ?></strong>
+                                    </a>
                                 </td>
                                 <td><?= Sanitizer::clean($user['email']) ?></td>
                                 <td><?= Sanitizer::clean($user['phone'] ?? '—') ?></td>
                                 <td class="text-center">
                                     <?php
-                                    $roleClasses = [
-                                        'admin' => 'bg-danger',
-                                        'staff' => 'bg-warning text-dark',
-                                        'customer' => 'bg-info',
+                                    $roleBadgeClasses = [
+                                        1 => 'bg-danger',
+                                        2 => 'bg-primary',
+                                        3 => 'bg-warning text-dark',
+                                        4 => 'bg-info',
                                     ];
-                                    $roleClass = $roleClasses[$user['role']] ?? 'bg-secondary';
+                                    $rid = (int)($user['role_id'] ?? 4);
+                                    $roleClass = $roleBadgeClasses[$rid] ?? 'bg-secondary';
+                                    $roleName = $user['role_name'] ?? 'Unknown';
                                     ?>
-                                    <span class="badge <?= $roleClass ?>"><?= ucfirst(Sanitizer::clean($user['role'])) ?></span>
+                                    <span class="badge <?= $roleClass ?>"><?= htmlspecialchars($roleName) ?></span>
                                 </td>
                                 <td class="text-center">
                                     <?php if ($user['status']): ?>
@@ -84,18 +99,23 @@ use App\Helpers\Sanitizer;
                                 </td>
                                 <td><?= date('d M Y', strtotime($user['created_at'])) ?></td>
                                 <td class="text-center">
+                                    <a href="<?= ADMIN_URL ?>users/view/<?= (int)$user['id'] ?>" class="btn btn-sm btn-outline-info" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                     <form method="POST" action="<?= ADMIN_URL ?>users/toggleStatus/<?= (int)$user['id'] ?>" class="d-inline">
                                         <?= CSRF::field() ?>
                                         <button type="submit" class="btn btn-sm <?= $user['status'] ? 'btn-outline-warning' : 'btn-outline-success' ?>" title="<?= $user['status'] ? 'Deactivate' : 'Activate' ?>">
                                             <i class="bi bi-<?= $user['status'] ? 'slash-circle' : 'check-lg' ?>"></i>
                                         </button>
                                     </form>
+                                    <?php if ((int)$user['role_id'] !== 1): ?>
                                     <form method="POST" action="<?= ADMIN_URL ?>users/destroy/<?= (int)$user['id'] ?>" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
                                         <?= CSRF::field() ?>
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -109,6 +129,7 @@ use App\Helpers\Sanitizer;
                     $firstItem = ($page - 1) * $perPage + 1;
                     $lastItem = min($page * $perPage, $total);
                     $searchParam = !empty($search) ? '&search=' . urlencode($search) : '';
+                    $roleParam = !empty($roleFilter) ? '&role=' . (int)$roleFilter : '';
                 ?>
                 <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
                     <div class="text-muted small">
@@ -118,17 +139,17 @@ use App\Helpers\Sanitizer;
                         <ul class="pagination pagination-sm mb-0">
                             <?php if ($page > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= ADMIN_URL ?>users?page=<?= $page - 1 ?><?= $searchParam ?>">Previous</a>
+                                    <a class="page-link" href="<?= ADMIN_URL ?>users?page=<?= $page - 1 ?><?= $searchParam ?><?= $roleParam ?>">Previous</a>
                                 </li>
                             <?php endif; ?>
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                                 <li class="page-item <?= $i === $page ? 'active' : '' ?>">
-                                    <a class="page-link" href="<?= ADMIN_URL ?>users?page=<?= $i ?><?= $searchParam ?>"><?= $i ?></a>
+                                    <a class="page-link" href="<?= ADMIN_URL ?>users?page=<?= $i ?><?= $searchParam ?><?= $roleParam ?>"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
                             <?php if ($page < $totalPages): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= ADMIN_URL ?>users?page=<?= $page + 1 ?><?= $searchParam ?>">Next</a>
+                                    <a class="page-link" href="<?= ADMIN_URL ?>users?page=<?= $page + 1 ?><?= $searchParam ?><?= $roleParam ?>">Next</a>
                                 </li>
                             <?php endif; ?>
                         </ul>

@@ -59,7 +59,8 @@ class AuthController
             }
 
             Auth::login($user);
-            Response::json(['success' => true, 'message' => 'Login successful', 'redirect' => APP_URL]);
+            $redirect = Auth::getDashboardUrl();
+            Response::json(['success' => true, 'message' => 'Login successful', 'redirect' => $redirect]);
             return;
         }
 
@@ -134,10 +135,11 @@ class AuthController
         }
 
         Auth::login($user);
+        $redirect = Auth::getDashboardUrl();
         Response::json([
             'success'  => true,
             'message'  => 'Login successful',
-            'redirect' => APP_URL,
+            'redirect' => $redirect,
         ]);
     }
 
@@ -173,17 +175,28 @@ class AuthController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = trim($_POST['email'] ?? '');
+            $phone = trim($_POST['phone'] ?? '');
+
+            if (!$email && !$phone) {
+                Response::error('Please provide email or phone number');
+            }
+
             $validator = new Validator($_POST);
             $validator->required('name', 'Name')
-                      ->required('email', 'Email')
-                      ->email('email', 'Email')
-                      ->unique('email', 'users', 'email', 0, 'Email')
-                      ->required('phone', 'Phone')
-                      ->phone('phone', 'Phone')
-                      ->unique('phone', 'users', 'phone', 0, 'Phone')
                       ->required('password', 'Password')
                       ->minLength('password', 6, 'Password')
                       ->required('password_confirmation', 'Password Confirmation');
+
+            if ($email) {
+                $validator->email('email', 'Email')
+                          ->unique('email', 'users', 'email', 0, 'Email');
+            }
+
+            if ($phone) {
+                $validator->phone('phone', 'Phone')
+                          ->unique('phone', 'users', 'phone', 0, 'Phone');
+            }
 
             if ($validator->fails()) {
                 Response::error($validator->firstError());
@@ -195,10 +208,10 @@ class AuthController
 
             $userId = $this->userModel->create([
                 'name'       => Sanitizer::clean($_POST['name']),
-                'email'      => Sanitizer::clean($_POST['email']),
-                'phone'      => Sanitizer::clean($_POST['phone']),
+                'email'      => $email ? Sanitizer::clean($email) : null,
+                'phone'      => $phone ? Sanitizer::clean($phone) : null,
                 'password'   => Auth::hashPassword($_POST['password']),
-                'role'       => 'customer',
+                'role_id'    => Auth::ROLE_USER,
                 'status'     => 1,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);

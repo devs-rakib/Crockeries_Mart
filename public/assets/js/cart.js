@@ -41,10 +41,10 @@ const Cart = (() => {
         return isNaN(num) ? '৳0' : '৳' + num.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     };
 
+    const _escaper = document.createElement('div');
     const escapeHtml = (str) => {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+        _escaper.textContent = str;
+        return _escaper.innerHTML;
     };
 
     const toast = (msg, type = 'success') => {
@@ -225,7 +225,7 @@ const Cart = (() => {
 
         body.innerHTML = cartItems.map((item) => `
             <div class="cm-cart-item" data-key="${escapeHtml(String(item.key))}">
-                <img src="${BASE_URL}/uploads/${escapeHtml(item.image || 'images/placeholder.svg')}" alt="${escapeHtml(item.name)}" loading="lazy">
+                <img src="${BASE_URL}/uploads/${escapeHtml(item.image || 'images/placeholder.svg')}" alt="${escapeHtml(item.name)}" width="64" height="64" loading="lazy">
                 <div class="item-info flex-grow-1">
                     <div class="d-flex justify-content-between">
                         <div class="item-name">${escapeHtml(item.name)}</div>
@@ -316,7 +316,21 @@ const Cart = (() => {
 
     const init = () => {
         bindEvents();
-        loadCart();
+        // Skip initial AJAX load if server already rendered cart content
+        // (prevents badge flicker from PHP-rendered count → 0 → correct count)
+        const serverBadge = document.getElementById('cartCountBadge');
+        const cartItems = document.getElementById('cartItems');
+        const hasServerContent = cartItems && cartItems.querySelector('.cm-cart-item');
+        if (!hasServerContent) {
+            loadCart();
+        } else {
+            // Sync badge from server-rendered content without re-rendering drawer
+            const count = parseInt(serverBadge?.textContent || '0');
+            updateCartBadge(count);
+            if (typeof window.updateShippingBar === 'function') {
+                window.updateShippingBar(calcTotal());
+            }
+        }
     };
 
     return { init, addToCart, updateCartItem, removeFromCart, loadCart, quickBuyNow, renderCartDrawer, updateCartBadge, openDrawer };

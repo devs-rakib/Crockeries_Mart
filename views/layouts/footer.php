@@ -38,6 +38,7 @@
                         <li><a href="<?= APP_URL ?>/pages/return-policy">Return Policy</a></li>
                         <li><a href="<?= APP_URL ?>/pages/shipping-info">Shipping Info</a></li>
                         <li><a href="<?= APP_URL ?>/pages/faq">FAQ</a></li>
+                        <li><a href="<?= APP_URL ?>/support">Support Center</a></li>
                         <li><a href="<?= APP_URL ?>/pages/terms">Terms & Conditions</a></li>
                     </ul>
                 </div>
@@ -98,10 +99,10 @@
             <div class="col-lg-6 col-md-6">
                 <div class="payment-methods">
                     <span>We Accept:</span>
-                    <img src="<?= APP_URL ?>/assets/images/payment/sslcommerz.svg" alt="SSLCommerz" class="payment-icon" title="SSLCommerz">
-                    <img src="<?= APP_URL ?>/assets/images/payment/visa.svg" alt="Visa" class="payment-icon" title="Visa">
-                    <img src="<?= APP_URL ?>/assets/images/payment/mastercard.svg" alt="Mastercard" class="payment-icon" title="Mastercard">
-                    <img src="<?= APP_URL ?>/assets/images/payment/cod.svg" alt="Cash on Delivery" class="payment-icon" title="Cash on Delivery">
+                    <img src="<?= APP_URL ?>/assets/images/payment/sslcommerz.svg" alt="SSLCommerz" class="payment-icon" title="SSLCommerz" width="50" height="28">
+                    <img src="<?= APP_URL ?>/assets/images/payment/visa.svg" alt="Visa" class="payment-icon" title="Visa" width="50" height="28">
+                    <img src="<?= APP_URL ?>/assets/images/payment/mastercard.svg" alt="Mastercard" class="payment-icon" title="Mastercard" width="50" height="28">
+                    <img src="<?= APP_URL ?>/assets/images/payment/cod.svg" alt="Cash on Delivery" class="payment-icon" title="Cash on Delivery" width="50" height="28">
                 </div>
             </div>
         </div>

@@ -254,7 +254,7 @@ class Order
         return $this->db->fetchAll(
             "SELECT u.id, u.name, u.email, u.phone, u.created_at
              FROM users u
-             WHERE u.role = 'customer' AND u.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+             WHERE u.role_id = 4 AND u.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
              ORDER BY u.created_at DESC LIMIT 10",
             [$days]
         );

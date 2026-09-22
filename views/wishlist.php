@@ -126,6 +126,7 @@ $items = $items ?? [];
 document.querySelectorAll('.wishlist-card .remove-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
         var productId = this.dataset.productId;
+        var card = document.getElementById('wishlist-item-' + productId);
         fetch('<?= APP_URL ?>/ajax_handler.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
@@ -134,10 +135,14 @@ document.querySelectorAll('.wishlist-card .remove-btn').forEach(function(btn) {
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.success) {
-                var card = document.getElementById('wishlist-item-' + productId);
-                if (card) card.remove();
-                if (document.querySelectorAll('.wishlist-card').length === 0) {
-                    location.reload();
+                if (card) {
+                    card.classList.add('removing');
+                    setTimeout(function() {
+                        card.remove();
+                        if (document.querySelectorAll('.wishlist-card').length === 0) {
+                            location.reload();
+                        }
+                    }, 300);
                 }
             }
         });

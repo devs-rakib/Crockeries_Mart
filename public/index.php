@@ -58,33 +58,37 @@ $routeMap = [
     'wishlist'           => ['controller' => 'Wishlist', 'action' => 'index'],
     'support'            => ['controller' => 'Support', 'action' => 'index'],
     'support/submit'     => ['controller' => 'Support', 'action' => 'submit'],
+    'support/ticket'     => ['controller' => 'Support', 'action' => 'view'],
+    'support/ticket/reply' => ['controller' => 'Support', 'action' => 'reply'],
     'offer'              => ['controller' => 'Product', 'action' => 'shop'],
     'category'           => ['controller' => 'Product', 'action' => 'shop'],
 ];
 
 if ($urlParts[0] === 'admin') {
     require APP_ROOT . '/app/Helpers/Auth.php';
-    \App\Helpers\Auth::requireAdmin();
+    \App\Helpers\Auth::requireRole(\App\Helpers\Auth::ROLE_ADMIN, \App\Helpers\Auth::ROLE_MANAGER, \App\Helpers\Auth::ROLE_STAFF);
 
     $adminSegment = $urlParts[1] ?? '';
 
     $adminRouteMap = [
-        'dashboard'   => 'Dashboard',
-        'products'    => 'Product',
-        'product'     => 'Product',
-        'categories'  => 'Category',
-        'category'    => 'Category',
-        'brands'      => 'Brand',
-        'brand'       => 'Brand',
-        'banners'     => 'Banner',
-        'banner'      => 'Banner',
-        'orders'      => 'Order',
-        'order'       => 'Order',
-        'users'       => 'User',
-        'user'        => 'User',
-        'contacts'    => 'Contact',
-        'contact'     => 'Contact',
-        'settings'    => 'Settings',
+        'dashboard'     => 'Dashboard',
+        'products'      => 'Product',
+        'product'       => 'Product',
+        'categories'    => 'Category',
+        'category'      => 'Category',
+        'brands'        => 'Brand',
+        'brand'         => 'Brand',
+        'banners'       => 'Banner',
+        'banner'        => 'Banner',
+        'orders'        => 'Order',
+        'order'         => 'Order',
+        'users'         => 'User',
+        'user'          => 'User',
+        'contacts'      => 'Contact',
+        'contact'       => 'Contact',
+        'support'       => 'Support',
+        'settings'      => 'Settings',
+        'activity-logs' => 'ActivityLog',
     ];
 
     if ($adminSegment === '' || $adminSegment === 'logout') {

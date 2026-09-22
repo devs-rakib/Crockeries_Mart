@@ -31,7 +31,7 @@ if (Auth::check()) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link href="<?= APP_URL ?>/assets/css/style.css" rel="stylesheet">
 
     <style>
@@ -65,9 +65,7 @@ if (Auth::check()) {
         .cm-topbar.hidden {
             transform: translateY(-100%);
             opacity: 0;
-            height: 0;
-            overflow: hidden;
-            line-height: 0;
+            pointer-events: none;
         }
         .cm-topbar a { color: #ccc; }
         .cm-topbar a:hover { color: var(--cm-primary-light); }
@@ -155,6 +153,22 @@ if (Auth::check()) {
         #searchResults .search-item .item-name { font-size: 14px; font-weight: 500; color: var(--cm-dark); }
         #searchResults .search-item .item-price { font-size: 13px; color: var(--cm-primary); font-weight: 600; }
         #searchResults .no-results { padding: 20px; text-align: center; color: var(--cm-gray-500); font-size: 14px; }
+        #searchResults.show { display: block; }
+        .search-dropdown__header { padding: 10px 16px; border-bottom: 1px solid var(--cm-gray-200); }
+        .search-dropdown__list { list-style: none; padding: 0; margin: 0; }
+        .search-dropdown__item { border-bottom: 1px solid var(--cm-gray-100); }
+        .search-dropdown__item:last-child { border-bottom: none; }
+        .search-dropdown__item.active, .search-dropdown__item:hover { background: var(--cm-gray-100); }
+        .search-dropdown__link { display: flex; align-items: center; gap: 12px; padding: 10px 16px; text-decoration: none; color: inherit; }
+        .search-dropdown__img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+        .search-dropdown__info { flex: 1; }
+        .search-dropdown__name { font-size: 14px; font-weight: 500; color: var(--cm-dark); }
+        .search-dropdown__name mark { background: #fff3cd; padding: 0 2px; border-radius: 2px; }
+        .search-dropdown__category { font-size: 12px; }
+        .search-dropdown__price { font-size: 13px; color: var(--cm-primary); font-weight: 600; }
+        .search-dropdown__footer { padding: 10px 16px; border-top: 1px solid var(--cm-gray-200); text-align: center; }
+        .search-dropdown__view-all { color: var(--cm-primary); font-size: 13px; font-weight: 600; text-decoration: none; }
+        .search-dropdown__view-all:hover { text-decoration: underline; }
 
         /* ── Header Icons ── */
         .cm-header-icons { display: flex; align-items: center; gap: 6px; }
@@ -419,7 +433,7 @@ if (Auth::check()) {
                 Hotline: <a href="tel:<?= SITE_PHONE ?>"><?= SITE_PHONE ?></a>
             </div>
             <div class="d-flex align-items-center gap-3 support-info">
-                <span>Customer Support</span>
+                <a href="<?= APP_URL ?>/support" style="text-decoration:none;color:inherit;"><i class="bi bi-headset me-1"></i>Customer Support</a>
                 <span>|</span>
                 <?php if (Auth::check()): ?>
                     <a href="<?= APP_URL ?>/account/profile" id="headerUserName" style="text-decoration:none;color:inherit;">Welcome, <strong><?= Sanitizer::clean(Auth::name()) ?></strong></a>
@@ -467,10 +481,13 @@ if (Auth::check()) {
                 <li class="nav-item">
                     <a class="nav-link" href="<?= APP_URL ?>/about">About</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= APP_URL ?>/support"><i class="bi bi-headset me-1"></i>Support</a>
+                </li>
             </ul>
 
             <!-- Search (right) -->
-            <div class="cm-search ms-auto d-none d-lg-flex" id="liveSearch">
+            <div class="cm-search ms-auto d-none d-lg-flex" id="liveSearch" data-base-url="<?= APP_URL ?>">
                 <form action="<?= APP_URL ?>/search" method="GET" class="d-flex w-100" autocomplete="off">
                     <input type="text" name="q" id="searchInput" placeholder="Search for crockery, dinnerware, kitchenware..." aria-label="Search">
                     <button type="submit" aria-label="Search"><i class="bi bi-search"></i></button>
@@ -541,7 +558,7 @@ if (Auth::check()) {
                     $itemPrice = $item['discount_price'] ?? $item['price'];
                 ?>
                     <div class="cm-cart-item" data-key="<?= htmlspecialchars($key) ?>">
-                        <img src="<?= $img ?>" alt="<?= Sanitizer::clean($item['name']) ?>">
+                        <img src="<?= $img ?>" alt="<?= Sanitizer::clean($item['name']) ?>" width="64" height="64" loading="lazy">
                         <div class="item-info flex-grow-1">
                             <div class="d-flex justify-content-between">
                                 <div class="item-name"><?= Sanitizer::clean($item['name']) ?></div>
@@ -595,63 +612,6 @@ if (Auth::check()) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
-    /* ── Live Search ── */
-    const searchInput   = document.getElementById('searchInput');
-    const searchResults = document.getElementById('searchResults');
-    let searchTimeout   = null;
-
-    if (searchInput && searchResults) {
-        searchInput.addEventListener('input', function () {
-            clearTimeout(searchTimeout);
-            const query = this.value.trim();
-            if (query.length < 2) {
-                searchResults.style.display = 'none';
-                searchResults.innerHTML = '';
-                return;
-            }
-            searchTimeout = setTimeout(function () {
-                fetch('<?= APP_URL ?>/ajax_handler.php?action=live_search&query=' + encodeURIComponent(query))
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        var results = data.results || data.products || [];
-                        if (results.length > 0) {
-                            var html = '';
-                            results.forEach(function (item) {
-                                var price = parseFloat(item.discount_price || item.price).toLocaleString();
-                                html += '<a href="' + (item.url || '<?= APP_URL ?>/product/' + item.slug) + '" class="search-item">' +
-                                    '<img src="' + (item.main_image || item.image || '<?= APP_URL ?>/assets/images/placeholder.svg') + '" alt="">' +
-                                    '<div>' +
-                                        '<div class="item-name">' + item.name + '</div>' +
-                                        '<div class="item-price">৳' + price + '</div>' +
-                                    '</div>' +
-                                '</a>';
-                            });
-                            searchResults.innerHTML = html;
-                            searchResults.style.display = 'block';
-                        } else {
-                            searchResults.innerHTML = '<div class="no-results">No products found</div>';
-                            searchResults.style.display = 'block';
-                        }
-                    })
-                    .catch(function () {
-                        searchResults.style.display = 'none';
-                    });
-            }, 350);
-        });
-
-        searchInput.addEventListener('blur', function () {
-            setTimeout(function () {
-                searchResults.style.display = 'none';
-            }, 200);
-        });
-
-        searchInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                searchResults.style.display = 'none';
-            }
-        });
-    }
 
     /* ── Offcanvas Cart: Load via AJAX ── */
     const cartDrawer = document.getElementById('cartDrawer');

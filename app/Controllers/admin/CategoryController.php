@@ -15,7 +15,7 @@ class CategoryController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('manage_categories');
         $this->categoryModel = new Category();
     }
 

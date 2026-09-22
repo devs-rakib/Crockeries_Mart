@@ -13,7 +13,7 @@ class SupportController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('manage_support');
         $this->ticketModel = new SupportTicket();
     }
 

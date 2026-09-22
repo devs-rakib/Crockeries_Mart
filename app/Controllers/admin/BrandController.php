@@ -15,7 +15,7 @@ class BrandController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('manage_brands');
         $this->brandModel = new Brand();
     }
 

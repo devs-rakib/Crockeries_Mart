@@ -77,13 +77,14 @@ use App\Helpers\CSRF;
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Email Address</label>
-                    <input type="email" class="form-control" name="email" required placeholder="your@email.com" autocomplete="email">
+                    <input type="email" class="form-control" name="email" placeholder="your@email.com" autocomplete="email">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" name="phone" required placeholder="01XXXXXXXXX" autocomplete="tel">
+                    <input type="tel" class="form-control" name="phone" placeholder="01XXXXXXXXX" autocomplete="tel">
                 </div>
             </div>
+            <p class="text-muted mb-3" style="font-size:12px; margin-top:-10px;">At least one of email or phone is required</p>
 
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
@@ -151,6 +152,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const pass    = document.getElementById('regPassword').value;
         const confirm = document.getElementById('regConfirm').value;
+        const email   = form.querySelector('[name="email"]').value.trim();
+        const phone   = form.querySelector('[name="phone"]').value.trim();
+
+        if (!email && !phone) {
+            showAlert('Please provide email or phone number', 'danger');
+            return;
+        }
 
         if (pass !== confirm) {
             showAlert('Passwords do not match', 'danger');

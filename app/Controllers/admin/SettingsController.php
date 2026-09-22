@@ -15,7 +15,7 @@ class SettingsController
 
     public function __construct()
     {
-        Auth::requireAdmin();
+        Auth::requirePermission('manage_settings');
         $this->settingModel = new Setting();
         $this->backupDir = APP_ROOT . '/storage/backups';
     }
