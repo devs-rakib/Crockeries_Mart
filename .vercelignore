@@ -1,0 +1,7 @@
+/vendor
+/uploads
+/storage
+/sql
+/.env
+composer.phar
+.htaccess

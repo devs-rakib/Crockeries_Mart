@@ -1,6 +1,11 @@
 <?php
+// Vercel filesystem is read-only except /tmp — sessions must go there
+if (getenv('VERCEL') !== false && getenv('VERCEL') !== '') {
+    ini_set('session.save_path', sys_get_temp_dir());
+}
 session_start();
 
+// Absolute path loader to prevent working directory issues on Vercel
 define('APP_ROOT', dirname(__DIR__));
 require APP_ROOT . '/vendor/autoload.php';
 require APP_ROOT . '/config/config.php';
