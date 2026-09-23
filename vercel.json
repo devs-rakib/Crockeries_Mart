@@ -2,9 +2,15 @@
   "functions": {
     "api/index.php": {
       "runtime": "vercel-php@0.7.3"
+    },
+    "public/ajax_handler.php": {
+      "runtime": "vercel-php@0.7.3"
     }
   },
   "routes": [
+    { "src": "/ajax_handler.php", "dest": "/public/ajax_handler.php" },
+    { "src": "/public/ajax_handler.php", "dest": "/public/ajax_handler.php" },
+    { "src": "/.*\\.php$", "dest": "/api/index.php" },
     { "handle": "filesystem" },
     {
       "src": "/(.*)",

@@ -17,6 +17,11 @@ use App\Helpers\Cache;
 Session::init();
 Cache::init();
 
+if (!isset($_GET['url'])) {
+    $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+    $uriPath = preg_replace('#^/?(public/index\.php|index\.php)?#', '', $uriPath);
+    $_GET['url'] = ltrim($uriPath, '/');
+}
 $url = trim($_GET['url'] ?? '', '/');
 $url = rtrim($url, '/');
 $url = $url === '' ? 'home' : $url;

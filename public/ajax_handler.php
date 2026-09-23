@@ -1,4 +1,8 @@
 <?php
+// Vercel filesystem is read-only except /tmp — sessions must go there
+if (getenv('VERCEL') !== false && getenv('VERCEL') !== '') {
+    ini_set('session.save_path', sys_get_temp_dir());
+}
 session_start();
 
 define('APP_ROOT', dirname(__DIR__));
